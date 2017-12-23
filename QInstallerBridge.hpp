@@ -40,6 +40,8 @@
 #include <QtCore>
 #include <QXmlStreamReader>
 #include <QTemporaryFile>
+#include <QDomDocument>
+#include <QDomElement>
 #include "QArchive/QArchive.hpp"
 #include "QEasyDownloader/QEasyDownloader.hpp"
 
@@ -186,7 +188,7 @@ public:
         this->repoLink = repoLink;
         this->componentsXML = componentsXML;
         this->installationPath = installPath;
-        
+
         showConfiguration();
         return;
     }
@@ -222,7 +224,7 @@ public:
         this->installationPath = installPath;
         return;
     }
-    
+
     void setDebug(bool ch)
     {
         this->debug = ch;
@@ -243,7 +245,7 @@ public:
     {
         return componentsXML;
     }
-    
+
     const QString &getInstallationPath()
     {
         return installationPath;
@@ -375,7 +377,55 @@ private slots:
                    SLOT(RepoSync(const QUrl&, const QString&)));
         return;
     }
-    
+
+    void RepoMergeXML(const QString& packageName, const QString& newVersion)
+    {
+        QDomDocument doc("components");
+        QFile file(componentsXML);
+        if (!file.open(QIODevice::ReadOnly)) {
+            if(debug) {
+                qDebug() << "QInstallerBridge::ComponentsXML::Error::Cannot Open file!";
+            }
+            emit error(COMPONENTS_XML_SYNTAX_ERROR, componentsXML );
+            return;
+        }
+
+        if (!doc.setContent(&file)) {
+            if(debug) {
+                qDebug() << "QInstallerBridge::ComponentsXML::Error::Cannot set QDomDocument!";
+            }
+            emit error(COMPONENTS_XML_SYNTAX_ERROR, componentsXML);
+
+            file.close();
+            return ;
+        }
+        file.close();
+
+        QDomNodeList Packages = doc.elementsByTagName("Package");
+
+        for(int i = 0 ; i < Packages.size() ; ++i) {
+            QDomElement Package = Packages.at(i).toElement();
+            QDomNodeList Version = Package.elementsByTagName("Version");
+            QDomNodeList Name    = Package.elementsByTagName("Name");
+            if(Name.at(0).toElement().text() == packageName) {
+                Version.at(0).firstChild().setNodeValue(newVersion);
+                break;
+            }
+        }
+
+        if (!file.open(QIODevice::Truncate | QIODevice::WriteOnly)) {
+            if(debug) {
+                qDebug() << "QInstallerBridge::ComponentsXML::Error::Cannot Append file!";
+            }
+            emit error(COMPONENTS_XML_SYNTAX_ERROR, componentsXML);
+            return;
+        }
+        QByteArray xml = doc.toByteArray();
+        file.write(xml);
+        file.close();
+        return;
+    }
+
     void FreeTemporaryFiles()
     {
         for(int item = 0; item < CachedTemporaryFiles.size() ; ++item) {
@@ -394,6 +444,7 @@ public slots:
             qDebug() << "QInstallerBridge::Collecting online information.";
         }
 
+        Updates.clear(); // clear previous updates!
         auto TempFile = new QTemporaryFile;
         QString updatesXML;
 
@@ -499,7 +550,7 @@ public slots:
         }
         return;
     }
-    
+
     void InstallUpdates()
     {
         connect(&Archiver, &QArchive::Extractor::status,
@@ -519,6 +570,15 @@ public slots:
         [&]() {
             FreeTemporaryFiles();
             CachedPackagesData.clear();
+
+            /*
+             * Update Local Information!
+             * ~This is Very Important than Anything~
+            */
+            for(int item = 0; item < Updates.size() ; ++item) {
+                RepoMergeXML(Updates.at(item).PackageName, Updates.at(item).Version);
+            }
+
             emit updatesInstalled();
             return;
         });
@@ -529,23 +589,23 @@ public slots:
         return;
     }
 
-void AbortDownload()
-{
+    void AbortDownload()
+    {
         DownloadManager.Pause();
         FreeTemporaryFiles();
         emit DownloadAborted();
         return;
-}
-
-void AbortInstallation()
-{
-    if(Archiver.isRunning()){
-        Archiver.requestInterruption();
     }
-    FreeTemporaryFiles();
-    emit InstallationAborted();
-    return;
-}
+
+    void AbortInstallation()
+    {
+        if(Archiver.isRunning()) {
+            Archiver.requestInterruption();
+        }
+        FreeTemporaryFiles();
+        emit InstallationAborted();
+        return;
+    }
 signals:
     void error(short, const QString&);
     void updatesList(const QVector<PackageUpdate>&);
@@ -560,10 +620,10 @@ signals:
     void updatesDownloaded();
     void updatesInstalling(const QString&);
     void updatesInstalled();
-    
+
     void DownloadAborted();
     void InstallationAborted();
-    
+
 private:
     bool debug = false,
          doUpdate = false;
