@@ -180,10 +180,10 @@ private slots:
 
                 if(Key == "Name") {
                     Package.PackageName = QString(XMLReader.readElementText());
-                }/*else if(Key == "Description")
+                }else if(Key == "Description")
                 {
                     Package.Description = QString(XMLReader.readElementText());
-                }*/else if(Key == "Version") {
+                }else if(Key == "Version") {
                     Package.Version = QString(XMLReader.readElementText());
                 } else if(Key == "DownloadableArchives") {
                     Package.DownloadableArchives = QString(XMLReader.readElementText());
@@ -194,7 +194,8 @@ private slots:
             }
         }
 
-        TempFile.remove();
+        QFile removeFile(file);
+	removeFile.remove();
 
         if(XMLReader.hasError()) {
             if(debug) {
@@ -281,11 +282,11 @@ public slots:
             qDebug() << "QInstallerBridge::Collecting online information.";
         }
 
-        TempFile.reset();
+        auto TempFile = new QTemporaryFile;
         QString updatesXML;
 
-        if(TempFile.open()) {
-            updatesXML = TempFile.fileName();
+        if(TempFile->open()) {
+            updatesXML = TempFile->fileName();
             if(debug) {
                 qDebug() << "QInstallerBridge::Using::"<< updatesXML;
             }
@@ -401,13 +402,13 @@ public slots:
 
 	connect(&Archiver , &QArchive::Extractor::finished,
 	[&](){
-		emit updatesInstalled();
 		for(int item = 0; item < CachedPackagesData.size() ; ++item)
 		{
 			QFile fileToRemove(CachedPackagesData.at(item));
 			fileToRemove.remove();
 		}
 		CachedPackagesData.clear();
+		emit updatesInstalled();
 		return;
 	});
 
@@ -420,7 +421,13 @@ public slots:
 signals:
     void error(short, const QString&);
     void updatesList(const QVector<PackageUpdate>&);
-    void updatesDownloadProgress(qint64 bytesReceived, qint64 bytesTotal, int percent, double speed, const QString &unit, const QUrl &url, const QString &fileName);
+    void updatesDownloadProgress(qint64 bytesReceived,
+		                 qint64 bytesTotal, 
+				 int percent, 
+				 double speed, 
+				 const QString &unit, 
+				 const QUrl &url, 
+				 const QString &fileName);
     void updateDownloaded(const QUrl&, const QString&);
     void updatesDownloaded();
     void updatesInstalling(const QString&);
@@ -432,7 +439,6 @@ private:
             componentsXML;
     QStringList CachedPackagesData;
     QVector<PackageUpdate> Updates;
-    QTemporaryFile TempFile;
     QEasyDownloader DownloadManager;
     QArchive::Extractor Archiver;
 }; // Class QInstallerBridge Ends
