@@ -52,6 +52,8 @@
 #define NETWORK_ERROR -4
 #define UPDATES_XML_NOT_FOUND -5
 #define UPDATES_XML_SYNTAX_ERROR -6
+#define SHA1_KEY_MISMATCH -7
+#define UNKNOWN_ERROR -8
 
 /*
  * Semver
@@ -60,6 +62,12 @@
 #define MINOR 1
 #define PATCH 2
 
+
+/*
+ * Structure PackageUpdate
+ * -----------------------
+ *  Contains the information for a package update!
+*/
 typedef struct {
     QString PackageName;
     QString Description;
@@ -68,6 +76,85 @@ typedef struct {
     QString SHA1;
 } PackageUpdate;
 
+/*
+ * Class QInstallerBridge  <- Inherits QObject
+ * ----------------------
+ *
+ *  This is the main class that communicates with the Qt Installer Framework
+ *  Elegantly , this avoid you from creating nasty subprocess to the Maintanance Tool.
+ *
+ *  Constructors:
+ *
+ *  	QInstallerBridge(QObject *p = 0)  - Default Constructor.
+ *  	QInstallerBridge(const QString&,
+ *  			 const QString&,
+ *  			 bool)		  - Constructs the class and also assign
+ *  			 		    (1) repoLink , (2) componentsXML and (3) debug.
+ *
+ *  Methods:
+ *
+ *  	void setConfiguration(const QString&,
+ *                            const QString&,
+ *                            bool)		  - Assigns (1) repoLink , (2) componentsXML and (3) debug.
+ *
+ *	void showConfiguration()		  - Prints your configuration if debug is set true ,
+ *					    you must enable debug to print anything from QInstallerBridge!
+ *
+ *	void setRepoLink(const QString&) 	  - Assigns (1) repoLink.
+ *	void setComponentsXML(const QString&)	  - Assigns (2) componentsXML.
+ *	void setDebug(bool)			  - Assigns or sets (3) Debug.
+ *
+ *	const QString &getRepoLink(void)	  - Gets (1) repoLink.
+ *	const QString &getComponentsXML(void)  	  - Gets (2) componentsXML.
+ *	bool  isDebug(void)			  - Returns True or False from (3) Debug.
+ *
+ * Private Slots:
+ * 	void RepoSync(const QUrl& , const QString&)         - This slot is connected to the signal of
+ * 						       	      QEasyDownloader::DownloadFinished
+ * 						              Downloads Updates.xml from the remote
+ * 						              repo and checks for new update.
+ * 						              If found updatesList(const QStringList&) is
+ * 						              emitted.
+ *
+ * 	void VerifyAndMergeRepo(const QUrl&,const QString&) - This slot is connect to the signal of
+ * 							      QEasyDownloader::DownloadFinished
+ * 							      Downloads {Version}meta.7z from the
+ * 							      remote repo and checks the SHA1 sum of
+ * 							      the {Version}meta.7z.
+ *
+ * 	void FreeTemporaryFiles()			    - This slot is used to free all the allocated
+ * 							      QTemporaryFile.
+ *
+ * Public Slots:
+ *
+ * 	void CheckForUpdates()	- Checks for updates and if found then emits a signal.
+ * 	void DownloadUpdates()	- Downloads the entried updates by (1) CheckForUpdates.
+ * 	void InstallUpdates()	- Installs the content cached by (2) DownloadUpdates
+ * 				  from the remote repo.
+ *
+ * 	Note: The Above slots must be called in sequence , only execute the next slot once
+ * 	      You know that the previous or the current slot emits a positive signal!
+ *
+ * Signals:
+ *
+ * 	void error(short, const QString&) - Emitted when something goes wrong.
+ * 	void updatesList(const QVector<PackageUpdate>&) - Emitted when new updates are found.
+ *
+ * 	void updatesDownloadProgress(qint64 bytesReceived,
+ *                                   qint64 bytesTotal,
+ *                                   int percent,
+ *                                   double speed,
+ *                                   const QString &unit,
+ *                                   const QUrl &url,
+ *                                   const QString &fileName) - Emitted for progress for downloading
+ *                                   				updates.
+ *
+ *      void updateDownloaded(const QUrl&, const QString&) - Emitted when a single update is downloaded.
+ *      void updatesDownloaded() - Emitted when all updates are downloaded.
+ *      void updatesInstalling(const QString&) - Emitted when a package is beign installed.
+ *      void updatesInstalled() - Emitted when all updates get installed , this will be our endpoint!
+ *
+*/
 class QInstallerBridge : public QObject
 {
     Q_OBJECT
@@ -148,6 +235,7 @@ public:
 
     ~QInstallerBridge()
     {
+        FreeTemporaryFiles();
     }
 
 private slots:
@@ -180,10 +268,9 @@ private slots:
 
                 if(Key == "Name") {
                     Package.PackageName = QString(XMLReader.readElementText());
-                }else if(Key == "Description")
-                {
+                } else if(Key == "Description") {
                     Package.Description = QString(XMLReader.readElementText());
-                }else if(Key == "Version") {
+                } else if(Key == "Version") {
                     Package.Version = QString(XMLReader.readElementText());
                 } else if(Key == "DownloadableArchives") {
                     Package.DownloadableArchives = QString(XMLReader.readElementText());
@@ -194,8 +281,7 @@ private slots:
             }
         }
 
-        QFile removeFile(file);
-	removeFile.remove();
+        FreeTemporaryFiles(); // Deletes all allocated QTemporaryFile 's
 
         if(XMLReader.hasError()) {
             if(debug) {
@@ -274,6 +360,21 @@ private slots:
         return;
     }
 
+    void VerifyAndMergeRepo(const QUrl& url, const QString& file)
+    {
+        return;
+    }
+
+    void FreeTemporaryFiles()
+    {
+        for(int item = 0; item < CachedTemporaryFiles.size() ; ++item) {
+            auto TFile = CachedTemporaryFiles.at(item);
+            TFile->deleteLater();
+        }
+        CachedTemporaryFiles.clear();
+        return;
+    }
+
 public slots:
     void CheckForUpdates()
     {
@@ -294,6 +395,7 @@ public slots:
             emit error(TEMP_FILE_OPEN_ERROR, updatesXML);
             return;
         }
+        CachedTemporaryFiles.push_back(TempFile);
 
         if(debug) {
             qDebug() << "QInstallerBridge::Downloading::Updates.xml:: " << repoLink + "/Updates.xml";
@@ -302,10 +404,10 @@ public slots:
         /*
          * Connect Callbacks!
         */
-        connect(&DownloadManager, 
-		SIGNAL(DownloadFinished(const QUrl&, const QString& )),
-		this, 
-		SLOT(RepoSync(const QUrl&, const QString&)));
+        connect(&DownloadManager,
+                SIGNAL(DownloadFinished(const QUrl&, const QString& )),
+                this,
+                SLOT(RepoSync(const QUrl&, const QString&)));
         connect(&DownloadManager, &QEasyDownloader::Error,
         [&](QNetworkReply::NetworkError errorCode, const QUrl &url, const QString &fileName) {
             if(errorCode == QNetworkReply::HostNotFoundError) {
@@ -332,7 +434,7 @@ public slots:
 
         CachedPackagesData.clear(); // clean previous data
 
-        connect(&DownloadManager, &QEasyDownloader::DownloadFinished ,
+        connect(&DownloadManager, &QEasyDownloader::DownloadFinished,
         [&](const QUrl &url, const QString &file) {
             emit updateDownloaded(url, file);
         });
@@ -341,18 +443,20 @@ public slots:
         [&](QNetworkReply::NetworkError errorCode, const QUrl &url, const QString &fileName) {
             if(errorCode == QNetworkReply::HostNotFoundError) {
                 emit error(NETWORK_ERROR,url.toString() + " :: " + fileName);
+            } else {
+                emit error(NETWORK_ERROR, "In Retriving " + url.toString());
             }
             return;
         });
 
         connect(&DownloadManager, &QEasyDownloader::DownloadProgress,
-        [&](qint64 bytesReceived,
-	    qint64 bytesTotal, 
-	    int percent, 
-	    double speed, 
-	    const QString &unit, 
-	    const QUrl &url, 
-	    const QString &fileName) {
+                [&](qint64 bytesReceived,
+                    qint64 bytesTotal,
+                    int percent,
+                    double speed,
+                    const QString &unit,
+                    const QUrl &url,
+        const QString &fileName) {
             emit updatesDownloadProgress(bytesReceived, bytesTotal, percent, speed, unit, url,fileName);
             return;
         });
@@ -376,9 +480,10 @@ public slots:
                                      + Updates.at(item).Version
                                      + PackagesData.at(dataItem);
                 auto TFile = new QTemporaryFile;
-		TFile->open();
-		CachedPackagesData << TFile->fileName();
+                TFile->open();
+                CachedPackagesData << TFile->fileName();
                 DownloadManager.Download(ArchiveURL, TFile->fileName());
+                CachedTemporaryFiles.push_back(TFile);
             }
         }
         return;
@@ -386,35 +491,30 @@ public slots:
 
     void InstallUpdates()
     {
-	connect(&Archiver , &QArchive::Extractor::status ,
-	[&](const QString& Archive,const QString& file){
-		(void)Archive;
-		emit updatesInstalling(file);
-		return;
-	});
+        connect(&Archiver, &QArchive::Extractor::status,
+        [&](const QString& Archive,const QString& file) {
+            (void)Archive;
+            emit updatesInstalling(file);
+            return;
+        });
 
-	connect(&Archiver , &QArchive::Extractor::error,
-	[&](short errorCode, const QString& Archive)
-	{
-		emit error(errorCode , Archive);
-		return;
-	});
+        connect(&Archiver, &QArchive::Extractor::error,
+        [&](short errorCode, const QString& Archive) {
+            emit error(errorCode, Archive);
+            return;
+        });
 
-	connect(&Archiver , &QArchive::Extractor::finished,
-	[&](){
-		for(int item = 0; item < CachedPackagesData.size() ; ++item)
-		{
-			QFile fileToRemove(CachedPackagesData.at(item));
-			fileToRemove.remove();
-		}
-		CachedPackagesData.clear();
-		emit updatesInstalled();
-		return;
-	});
+        connect(&Archiver, &QArchive::Extractor::finished,
+        [&]() {
+            FreeTemporaryFiles();
+            CachedPackagesData.clear();
+            emit updatesInstalled();
+            return;
+        });
 
-	Archiver.addArchive(CachedPackagesData);
-	Archiver.setDestination("./");
-	Archiver.start();
+        Archiver.addArchive(CachedPackagesData);
+        Archiver.setDestination("./");
+        Archiver.start();
         return;
     }
 
@@ -422,12 +522,12 @@ signals:
     void error(short, const QString&);
     void updatesList(const QVector<PackageUpdate>&);
     void updatesDownloadProgress(qint64 bytesReceived,
-		                 qint64 bytesTotal, 
-				 int percent, 
-				 double speed, 
-				 const QString &unit, 
-				 const QUrl &url, 
-				 const QString &fileName);
+                                 qint64 bytesTotal,
+                                 int percent,
+                                 double speed,
+                                 const QString &unit,
+                                 const QUrl &url,
+                                 const QString &fileName);
     void updateDownloaded(const QUrl&, const QString&);
     void updatesDownloaded();
     void updatesInstalling(const QString&);
@@ -436,8 +536,10 @@ private:
     bool debug = false,
          doUpdate = false;
     QString repoLink,
-            componentsXML;
+            componentsXML,
+            installationPath;
     QStringList CachedPackagesData;
+    QVector<QTemporaryFile*> CachedTemporaryFiles;
     QVector<PackageUpdate> Updates;
     QEasyDownloader DownloadManager;
     QArchive::Extractor Archiver;
