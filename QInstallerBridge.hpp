@@ -166,10 +166,12 @@ public:
     }
     explicit QInstallerBridge(const QString& repoLink,
                               const QString& componentsXML,
+                              const QString& installPath,
                               bool debug)
         : debug(debug),
           repoLink(repoLink),
-          componentsXML(componentsXML)
+          componentsXML(componentsXML),
+          installationPath(installPath)
     {
         showConfiguration();
         return;
@@ -177,12 +179,14 @@ public:
 
     void setConfiguration(const QString& repoLink,
                           const QString& componentsXML,
+                          const QString& installPath,
                           bool debug)
     {
         this->debug = debug;
         this->repoLink = repoLink;
         this->componentsXML = componentsXML;
-
+        this->installationPath = installPath;
+        
         showConfiguration();
         return;
     }
@@ -191,9 +195,10 @@ public:
     {
         if(debug) {
             qDebug() << "*** Configuration ***";
-            qDebug() << "Remote Repo URL:: " << ((repoLink.isEmpty()) ? "Empty!" : repoLink);
-            qDebug() << "Components XML :: " << ((componentsXML.isEmpty()) ? "Empty!" : componentsXML);
-            qDebug() << "Debug          :: " << "True";
+            qDebug() << "Remote Repo URL  :: " << ((repoLink.isEmpty()) ? "Empty!" : repoLink);
+            qDebug() << "Components XML   :: " << ((componentsXML.isEmpty()) ? "Empty!" : componentsXML);
+            qDebug() << "installationPath :: " << ((installationPath.isEmpty()) ? "Empty!" : installationPath);
+            qDebug() << "Debug            :: " << "True";
             qDebug() << "*********************";
         }
         return;
@@ -212,6 +217,12 @@ public:
         return;
     }
 
+    void setInstallationPath(const QString& installPath)
+    {
+        this->installationPath = installPath;
+        return;
+    }
+    
     void setDebug(bool ch)
     {
         this->debug = ch;
@@ -231,6 +242,11 @@ public:
     const QString &getComponentsXML()
     {
         return componentsXML;
+    }
+    
+    const QString &getInstallationPath()
+    {
+        return installationPath;
     }
 
     ~QInstallerBridge()
@@ -359,12 +375,7 @@ private slots:
                    SLOT(RepoSync(const QUrl&, const QString&)));
         return;
     }
-
-    void VerifyAndMergeRepo(const QUrl& url, const QString& file)
-    {
-        return;
-    }
-
+    
     void FreeTemporaryFiles()
     {
         for(int item = 0; item < CachedTemporaryFiles.size() ; ++item) {
@@ -488,7 +499,7 @@ public slots:
         }
         return;
     }
-
+    
     void InstallUpdates()
     {
         connect(&Archiver, &QArchive::Extractor::status,
@@ -513,11 +524,28 @@ public slots:
         });
 
         Archiver.addArchive(CachedPackagesData);
-        Archiver.setDestination("./");
-        Archiver.start();
+        Archiver.setDestination(installationPath);
+        Archiver.start(); // Start the extraction off!
         return;
     }
 
+void AbortDownload()
+{
+        DownloadManager.Pause();
+        FreeTemporaryFiles();
+        emit DownloadAborted();
+        return;
+}
+
+void AbortInstallation()
+{
+    if(Archiver.isRunning()){
+        Archiver.requestInterruption();
+    }
+    FreeTemporaryFiles();
+    emit InstallationAborted();
+    return;
+}
 signals:
     void error(short, const QString&);
     void updatesList(const QVector<PackageUpdate>&);
@@ -532,6 +560,10 @@ signals:
     void updatesDownloaded();
     void updatesInstalling(const QString&);
     void updatesInstalled();
+    
+    void DownloadAborted();
+    void InstallationAborted();
+    
 private:
     bool debug = false,
          doUpdate = false;
