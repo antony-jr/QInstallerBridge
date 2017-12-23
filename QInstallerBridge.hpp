@@ -194,7 +194,7 @@ private slots:
             }
         }
 
-        TempFile->remove();
+        TempFile.remove();
 
         if(XMLReader.hasError()) {
             if(debug) {
@@ -235,15 +235,15 @@ private slots:
                             QStringList SemVerLocal = Version.split(".");
                             QStringList SemVerRepos = RepoPackages.at(item).Version.split(".");
 
-                            if(
-                                SemVerRepos.at(PATCH) > SemVerLocal.at(PATCH) ||
-                                SemVerRepos.at(MINOR) > SemVerLocal.at(MINOR) ||
-                                SemVerRepos.at(MAJOR) > SemVerLocal.at(MAJOR)
-                            ) {
-                                if(debug) {
-                                    qDebug() << "QInstallerBridge::New Update Available!";
+                            if(SemVerRepos.at(MAJOR).toInt() >= SemVerLocal.at(MAJOR).toInt()) {
+                                if(SemVerRepos.at(MINOR).toInt() >= SemVerLocal.at(MINOR).toInt()) {
+                                    if(SemVerRepos.at(PATCH).toInt() > SemVerLocal.at(PATCH).toInt()) {
+                                        if(debug) {
+                                            qDebug() << "QInstallerBridge::New Update Available!";
+                                        }
+                                        Updates.push_back(RepoPackages.at(item));
+                                    }
                                 }
-                                Updates.push_back(RepoPackages.at(item));
                             }
                             break;
                         }
@@ -261,6 +261,15 @@ private slots:
             return;
         }
         emit updatesList(Updates);
+
+        /*
+         * Disconnect Previous Connections
+         * just in case!
+        */
+        disconnect(&DownloadManager,
+                   SIGNAL(DownloadFinished(const QUrl&, const QString& )),
+                   this,
+                   SLOT(RepoSync(const QUrl&, const QString&)));
         return;
     }
 
@@ -272,11 +281,11 @@ public slots:
             qDebug() << "QInstallerBridge::Collecting online information.";
         }
 
-        TempFile = new QTemporaryFile;
+        TempFile.reset();
         QString updatesXML;
 
-        if(TempFile->open()) {
-            updatesXML = TempFile->fileName();
+        if(TempFile.open()) {
+            updatesXML = TempFile.fileName();
             if(debug) {
                 qDebug() << "QInstallerBridge::Using::"<< updatesXML;
             }
@@ -292,11 +301,14 @@ public slots:
         /*
          * Connect Callbacks!
         */
-        connect(&DownloadManager, SIGNAL(DownloadFinished(const QUrl&, const QString& )), this, SLOT(RepoSync(const QUrl&, const QString&)));
+        connect(&DownloadManager, 
+		SIGNAL(DownloadFinished(const QUrl&, const QString& )),
+		this, 
+		SLOT(RepoSync(const QUrl&, const QString&)));
         connect(&DownloadManager, &QEasyDownloader::Error,
         [&](QNetworkReply::NetworkError errorCode, const QUrl &url, const QString &fileName) {
             if(errorCode == QNetworkReply::HostNotFoundError) {
-                emit error(NETWORK_ERROR,repoLink + "/Updates.xml");
+                emit error(NETWORK_ERROR,url.toString() + " :: " + fileName);
             }
             return;
         });
@@ -313,24 +325,114 @@ public slots:
 
     void DownloadUpdates()
     {
+        if(Updates.isEmpty()) {
+            return;
+        }
+
+        CachedPackagesData.clear(); // clean previous data
+
+        connect(&DownloadManager, &QEasyDownloader::DownloadFinished ,
+        [&](const QUrl &url, const QString &file) {
+            emit updateDownloaded(url, file);
+        });
+
+        connect(&DownloadManager, &QEasyDownloader::Error,
+        [&](QNetworkReply::NetworkError errorCode, const QUrl &url, const QString &fileName) {
+            if(errorCode == QNetworkReply::HostNotFoundError) {
+                emit error(NETWORK_ERROR,url.toString() + " :: " + fileName);
+            }
+            return;
+        });
+
+        connect(&DownloadManager, &QEasyDownloader::DownloadProgress,
+        [&](qint64 bytesReceived,
+	    qint64 bytesTotal, 
+	    int percent, 
+	    double speed, 
+	    const QString &unit, 
+	    const QUrl &url, 
+	    const QString &fileName) {
+            emit updatesDownloadProgress(bytesReceived, bytesTotal, percent, speed, unit, url,fileName);
+            return;
+        });
+
+        connect(&DownloadManager, &QEasyDownloader::Finished,
+        [&]() {
+            emit updatesDownloaded();
+        });
+
+        for(int item = 0; item < Updates.size() ; ++item) {
+            QStringList PackagesData = Updates
+                                       .at(item)
+                                       .DownloadableArchives
+                                       .split(",");
+
+            for(int dataItem = 0; dataItem < PackagesData.size() ; ++dataItem) {
+                QString ArchiveURL = repoLink
+                                     + "/"
+                                     + Updates.at(item).PackageName
+                                     + "/"
+                                     + Updates.at(item).Version
+                                     + PackagesData.at(dataItem);
+                auto TFile = new QTemporaryFile;
+		TFile->open();
+		CachedPackagesData << TFile->fileName();
+                DownloadManager.Download(ArchiveURL, TFile->fileName());
+            }
+        }
         return;
     }
 
-    void UpdatePackages()
+    void InstallUpdates()
     {
+	connect(&Archiver , &QArchive::Extractor::status ,
+	[&](const QString& Archive,const QString& file){
+		(void)Archive;
+		emit updatesInstalling(file);
+		return;
+	});
+
+	connect(&Archiver , &QArchive::Extractor::error,
+	[&](short errorCode, const QString& Archive)
+	{
+		emit error(errorCode , Archive);
+		return;
+	});
+
+	connect(&Archiver , &QArchive::Extractor::finished,
+	[&](){
+		emit updatesInstalled();
+		for(int item = 0; item < CachedPackagesData.size() ; ++item)
+		{
+			QFile fileToRemove(CachedPackagesData.at(item));
+			fileToRemove.remove();
+		}
+		CachedPackagesData.clear();
+		return;
+	});
+
+	Archiver.addArchive(CachedPackagesData);
+	Archiver.setDestination("./");
+	Archiver.start();
         return;
     }
 
 signals:
     void error(short, const QString&);
     void updatesList(const QVector<PackageUpdate>&);
+    void updatesDownloadProgress(qint64 bytesReceived, qint64 bytesTotal, int percent, double speed, const QString &unit, const QUrl &url, const QString &fileName);
+    void updateDownloaded(const QUrl&, const QString&);
+    void updatesDownloaded();
+    void updatesInstalling(const QString&);
+    void updatesInstalled();
 private:
     bool debug = false,
          doUpdate = false;
     QString repoLink,
             componentsXML;
+    QStringList CachedPackagesData;
     QVector<PackageUpdate> Updates;
-    QTemporaryFile *TempFile;
+    QTemporaryFile TempFile;
     QEasyDownloader DownloadManager;
     QArchive::Extractor Archiver;
 }; // Class QInstallerBridge Ends

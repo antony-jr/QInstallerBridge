@@ -12,7 +12,31 @@ int main(int argc, char **argv)
             qDebug() << "Package Name ->" << list.at(it).PackageName;
             qDebug() << "Version ->" << list.at(it).Version;
         }
+	qDebug() << "Downloading Updates... ";
+	Bridge.DownloadUpdates();
     });
+
+    QObject::connect(&Bridge, &QInstallerBridge::updatesDownloaded,
+    [&]()
+    {
+	Bridge.InstallUpdates();
+	return;
+    });
+
+    QObject::connect(&Bridge, &QInstallerBridge::updatesInstalling ,
+    [&](QString file)
+    {
+	qDebug() << "QInstallerBridge::Installing::" << file;
+	return;
+    });
+
+    QObject::connect(&Bridge , &QInstallerBridge::updatesInstalled ,
+    [&](){
+    	qDebug() << "QInstallerBridge::Installed Update!";
+	app.quit();
+	return;
+    });
+
     Bridge.CheckForUpdates();
     return app.exec();
 }
