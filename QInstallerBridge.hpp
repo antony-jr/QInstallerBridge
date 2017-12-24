@@ -266,25 +266,9 @@ public:
     }
 
 private slots:
-    void RepoSync(const QUrl& url, const QString& file)
+    void RepoSync(const QString& resp)
     {
-        if(debug) {
-            qDebug() << "QInstallerBridge::Downloaded::" << file << "::From::" << url;
-        }
-        QFile UFile(file);
-        if(!UFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
-            if(debug) {
-                qDebug() << "QInstallerBridge::UpdatesXML:: Not Found!";
-            }
-            emit error(UPDATES_XML_NOT_FOUND, file);
-            return;
-        } else {
-            if(debug) {
-                qDebug() << "QInstallerBridge::UpdatesXML::Open Success!";
-            }
-        }
-
-        QXmlStreamReader XMLReader(&UFile);
+        QXmlStreamReader XMLReader(resp);
         QVector<PackageUpdate> RepoPackages;
         PackageUpdate Package;
 
@@ -307,8 +291,6 @@ private slots:
                 }
             }
         }
-
-        FreeTemporaryFiles(); // Deletes all allocated QTemporaryFile 's
 
         if(XMLReader.hasError()) {
             if(debug) {
@@ -381,9 +363,9 @@ private slots:
          * just in case!
         */
         disconnect(&DownloadManager,
-                   SIGNAL(DownloadFinished(const QUrl&, const QString& )),
+                   SIGNAL(GetResponse(const QString& )),
                    this,
-                   SLOT(RepoSync(const QUrl&, const QString&)));
+                   SLOT(RepoSync(const QString&)));
         return;
     }
 
@@ -454,41 +436,27 @@ public slots:
         }
 
         Updates.clear(); // clear previous updates!
-        auto TempFile = new QTemporaryFile;
-        QString updatesXML;
-
-        if(TempFile->open()) {
-            updatesXML = TempFile->fileName();
-            if(debug) {
-                qDebug() << "QInstallerBridge::Using::"<< updatesXML;
-            }
-        } else {
-            emit error(TEMP_FILE_OPEN_ERROR, updatesXML);
-            return;
-        }
-        CachedTemporaryFiles.push_back(TempFile);
 
         if(debug) {
-            qDebug() << "QInstallerBridge::Downloading::Updates.xml:: " << repoLink + "/Updates.xml";
+            qDebug() << "QInstallerBridge::GET::Updates.xml:: " << repoLink + "/Updates.xml";
         }
 
         /*
          * Connect Callbacks!
         */
         connect(&DownloadManager,
-                SIGNAL(DownloadFinished(const QUrl&, const QString& )),
+                SIGNAL(GetResponse(const QString& )),
                 this,
-                SLOT(RepoSync(const QUrl&, const QString&)));
+                SLOT(RepoSync(const QString&)));
         connect(&DownloadManager, &QEasyDownloader::Error,
         [&](QNetworkReply::NetworkError errorCode, const QUrl &url, const QString &fileName) {
-            if(errorCode == QNetworkReply::HostNotFoundError) {
-                emit error(NETWORK_ERROR,url.toString() + " :: " + fileName);
-            }
+	    (void)errorCode;
+	    emit error(NETWORK_ERROR,url.toString() + " :: " + fileName);
             return;
         });
 
         DownloadManager.Debug(debug);
-        DownloadManager.Download(repoLink + "/Updates.xml", updatesXML);
+        DownloadManager.Get(QUrl(repoLink + "/Updates.xml"));
 
         if(debug) {
             qDebug() << "QInstallerBridge::AwaitFor::RepoSync";
