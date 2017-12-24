@@ -1,5 +1,5 @@
 #include <QCoreApplication>
-#include "QInstallerBridge.hpp"
+#include "../../QInstallerBridge.hpp"
 
 int main(int argc, char **argv)
 {
@@ -7,11 +7,12 @@ int main(int argc, char **argv)
     QInstallerBridge Bridge("https://raw.githubusercontent.com/antony-jr/exercism-installer/master/exercism-installers/linux/repo",
                             "components.xml",
                             "./",
-                            true);
+                            false);
     QObject::connect(&Bridge, &QInstallerBridge::updatesList, [&](QVector<PackageUpdate> list) {
         if(list.isEmpty()) {
             qDebug() << "No Updates Available!";
-            return;
+            app.quit();
+	    return;
         }
         qDebug() << "Downloading " << list.size() << "Packages!";
         for(int it = 0; it < list.size() ; ++it) {
