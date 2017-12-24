@@ -20,10 +20,10 @@ thus **QInstallerBridge** was born.
 
 
 **QInstallerBridge** is a small header writen in C++ using Qt5 , This supports async structure and thus it is best suited   
-for your Qt Projects.   
-**QInstallerBridge** does not depend on **Qt's Maintanance Tool** , it just works on its own and handles Qt's Remote Repo   
-very well. **It also communicates with the Maintanance Tool's configuration** to make the Maintanance Tool know that we have   
-updated to the latest version. This makes **QInstallerBridge** to act without **Maintanance Tool** and also flows with it!   
+for your Qt Projects. **QInstallerBridge** does not depend on **Qt's Maintanance Tool** , it just works on its own and   
+handles Qt's Remote Repo very well. **It also communicates with the Maintanance Tool's configuration** to make the   
+Maintanance Tool know that we have updated to the latest version.   
+This makes **QInstallerBridge** to act without **Maintanance Tool** and also flows with it!   
 
 **You can also just distribute your app with components.xml to use QtInstallerBridge without the Qt Installer Framework**
 Cool , Right ?...
