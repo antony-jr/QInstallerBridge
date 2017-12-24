@@ -36,7 +36,7 @@ Cool , Right ?...
               That is common sense , right ?...
               
 
-Please refer the **documentation** for more information. ( Will soon be available! )
+Please refer the **documentation** for more information. ( Will soon be available! )   
 **Open issues** if you have any doubts , I will gladly answer you :heart: !
 
 
