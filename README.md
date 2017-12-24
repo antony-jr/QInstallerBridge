@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".img/poster.png" height="500px" width=auto alt="QInstallerBridge Poster">  <br>
+  <img src=".img/poster.png" height="400px" width=auto alt="QInstallerBridge Poster">  <br>
 </p>
 
 # QInstallerBridge [![GitHub issues](https://img.shields.io/github/issues/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/issues) [![GitHub forks](https://img.shields.io/github/forks/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/network) [![GitHub stars](https://img.shields.io/github/stars/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/stargazers) [![GitHub license](https://img.shields.io/github/license/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/blob/master/LICENSE)
