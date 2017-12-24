@@ -10,13 +10,12 @@
 
 # QInstallerBridge [![GitHub issues](https://img.shields.io/github/issues/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/issues) [![GitHub forks](https://img.shields.io/github/forks/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/network) [![GitHub stars](https://img.shields.io/github/stars/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/stargazers) [![GitHub license](https://img.shields.io/github/license/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/blob/master/LICENSE)
 
-Ever wanted to make your applications work with the flow but stuck with Qt's **Maintanance Tool** ?. I belive that updates should be just installed without   
-any complications but that does not mean **Qt Installer Framework** is a bluff , its actually the coolest thing a vendor can have.   
-With Qt's Installer Framework you can ship your packages to **Linux , Windows and Mac** with a cross-platform gui installer but the one thing that sucks   
-is that Qt does not provide a auto update officially but it does have the **Maintanance Tool** which can auto update.   
-Some cool folks used **QProcess** to communicate with the Maintanance Tool and that did work as a hotfix but I needed a solid and clean api to communicate   
-with Qt's Maintanance Tool and thus **QInstallerBridge** was born.
-
+Ever wanted to make your applications work with the flow but stuck with Qt's **Maintanance Tool** ?. I belive that updates should   
+be just installed without any complications but that does not mean **Qt Installer Framework** is a bluff , its actually the coolest   
+thing a vendor can have. With Qt's Installer Framework you can ship your packages to **Linux , Windows and Mac** with a cross-platform   
+gui installer but the one thing that sucks is that Qt does not provide a auto update officially but it does have the **Maintanance Tool**   
+which can **auto update**. Some cool folks used **QProcess** to communicate with the Maintanance Tool and that did work as a hotfix but   
+I needed a solid and clean api to communicate with Qt's Maintanance Tool and thus **QInstallerBridge** was born.
 
 
 # Support [![Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/antonyjr/donate) [![Twitter](https://img.shields.io/twitter/url/https/github.com/antony-jr/QInstallerBridge.svg?style=social)](https://twitter.com/intent/tweet?text=Checkout%20%23QInstallerBridge%20by%20%40antonyjr0%20%20%2C%20its%20cool.%20Try%20it%20at%20https%3A%2F%2Fgithub.com%2Fantony-jr%2FQInstallerBridge)
