@@ -8,7 +8,8 @@
 > --Antony Jr.
 
 
-# QInstallerBridge [![GitHub issues](https://img.shields.io/github/issues/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/issues) [![GitHub forks](https://img.shields.io/github/forks/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/network) [![GitHub stars](https://img.shields.io/github/stars/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/stargazers) [![GitHub license](https://img.shields.io/github/license/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/blob/master/LICENSE)
+# QInstallerBridge [![GitHub issues](https://img.shields.io/github/issues/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/issues) [![GitHub forks](https://img.shields.io/github/forks/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/network) [![GitHub stars](https://img.shields.io/github/stars/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/stargazers) [![GitHub license](https://img.shields.io/github/license/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/blob/master/LICENSE) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f68886cc517c4afda44bca08714cf3a6)](https://www.codacy.com/app/antony-jr/QInstallerBridge?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=antony-jr/QInstallerBridge&amp;utm_campaign=Badge_Grade)
+
 
 Ever wanted to make your applications work with the flow but stuck with Qt's **Maintanance Tool** ?. I belive that updates should   
 be just installed without any complications but that does not mean **Qt Installer Framework** is a bluff , its actually the coolest   
