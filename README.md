@@ -119,6 +119,7 @@ The best part is that QInstallerBridge is just a **header!**
 ```
  $ git clone https://github.com/antony-jr/QInstallerBridge
  $ cd QInstallerBridge
+ $ git submodule init 
  $ git submodule update # Get required dependencies , thats just a header.
  $ cd ..
  $ # Now in your project dir , include QInstallerBridge like in the examples.
