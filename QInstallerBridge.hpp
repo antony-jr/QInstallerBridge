@@ -124,6 +124,8 @@ typedef struct {
  * 							      remote repo and checks the SHA1 sum of
  * 							      the {Version}meta.7z.
  *
+ * 	void RepoMergeXML(const QString& , const QString&)  - Sets the new version for the respective package.
+ *
  * 	void FreeTemporaryFiles()			    - This slot is used to free all the allocated
  * 							      QTemporaryFile.
  *
@@ -136,6 +138,10 @@ typedef struct {
  *
  * 	Note: The Above slots must be called in sequence , only execute the next slot once
  * 	      You know that the previous or the current slot emits a positive signal!
+ *
+ *
+ * 	void AbortDownload() - Cancel Downloading Updates.
+ * 	void AbortInstallation() - Cancel Installation.
  *
  * Signals:
  *
@@ -155,6 +161,9 @@ typedef struct {
  *      void updatesDownloaded() - Emitted when all updates are downloaded.
  *      void updatesInstalling(const QString&) - Emitted when a package is beign installed.
  *      void updatesInstalled() - Emitted when all updates get installed , this will be our endpoint!
+ *
+ * 	void DownloadAborted()  - Emitted when AbortDownload() is successfull.
+ * 	void InstallationAborted() - Emitted when AbortInstallation() is successfull.
  *
 */
 class QInstallerBridge : public QObject
