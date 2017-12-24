@@ -111,6 +111,29 @@ int main(int argc, char **argv)
 
 **Refer the documentation for more information** ( Soon will be available! )
 
+
+# Installation
+
+The best part is that QInstallerBridge is just a **header!**
+
+```
+ $ git clone https://github.com/antony-jr/QInstallerBridge
+ $ cd QInstallerBridge
+ $ git submodule update # Get required dependencies , thats just a header.
+ $ cd ..
+ $ # Now in your project dir , include QInstallerBridge like in the examples.
+```
+
+**Installing** in a git **repository**
+
+```
+ $ git submodule init
+ $ git submodule add https://github.com/antony-jr/QInstallerBridge
+ $ git submodule update
+```
+
+**Refer** the **documentation** for more information on compiling. (Will be available soon)
+
 # Support [![Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/antonyjr/donate) [![Twitter](https://img.shields.io/twitter/url/https/github.com/antony-jr/QInstallerBridge.svg?style=social)](https://twitter.com/intent/tweet?text=Checkout%20%23QInstallerBridge%20by%20%40antonyjr0%20%20%2C%20its%20cool.%20Try%20it%20at%20https%3A%2F%2Fgithub.com%2Fantony-jr%2FQInstallerBridge)
 
 If you think that this project is **cool** then you can give it a :star: or :fork_and_knife: it if you want to improve it with me. I really :heart: stars though!   
