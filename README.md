@@ -118,23 +118,9 @@ int main(int argc, char **argv)
 The best part is that QInstallerBridge is just a **header!**
 
 ```
- $ git clone https://github.com/antony-jr/QInstallerBridge
- $ cd QInstallerBridge
- $ git submodule init 
- $ git submodule update # Get required dependencies , thats just a header.
- $ cd ..
- $ # Now in your project dir , include QInstallerBridge like in the examples.
-```
-
-**Installing** in a git **repository**
-
-```
- $ git submodule init
- $ git submodule add https://github.com/antony-jr/QInstallerBridge
- $ git submodule update
- $ cd QInstallerBridge
- $ git submodule init
- $ git submodule update
+ $ wget "https://github.com/antony-jr/QInstallerBridge/releases/download/v0.0.1/QInstallerBridge-v0.0.1.tar.gz"
+ $ tar -xvf QInstallerBridge-v0.0.1.tar.gz
+ $ # Thats it , You just need to download the files!
 ```
 
 **Refer** the **documentation** for more information on compiling. (Will be available soon)
