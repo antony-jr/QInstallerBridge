@@ -2,10 +2,16 @@
   <img src=".img/poster.png" height="400px" width=auto alt="QInstallerBridge Poster">  <br>
 </p>
 
+
+> :roller_coaster: A small header writen in C++ using Qt5 to :computer: communicate with the Qt Installer Framework :eyeglasses: . This header helps you to   
+> check the remote repo :white_check_mark: and also update to the latest version! :dog: 
+> --Antony Jr.
+
+
 # QInstallerBridge [![GitHub issues](https://img.shields.io/github/issues/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/issues) [![GitHub forks](https://img.shields.io/github/forks/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/network) [![GitHub stars](https://img.shields.io/github/stars/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/stargazers) [![GitHub license](https://img.shields.io/github/license/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/blob/master/LICENSE)
 
 
-:roller_coaster: A small header writen in C++ using Qt5 to :computer: communicate with the Qt Installer Framework :eyeglasses: . This header helps you to check the remote repo :white_check_mark: and also update to the latest version! :dog: 
+
 
 
 # Support [![Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/antonyjr/donate) [![Twitter](https://img.shields.io/twitter/url/https/github.com/antony-jr/QInstallerBridge.svg?style=social)](https://twitter.com/intent/tweet?text=Checkout%20%23QInstallerBridge%20by%20%40antonyjr0%20%20%2C%20its%20cool.%20Try%20it%20at%20https%3A%2F%2Fgithub.com%2Fantony-jr%2FQInstallerBridge)
