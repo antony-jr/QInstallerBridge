@@ -7,7 +7,7 @@
 > to check the remote repo :white_check_mark: and also update to the latest version! :dog:   
 > --Antony Jr.
 
-
+**THAT DOES NOT USE QPROCESS OR ANY OTHER NASTY CODE!**
 # QInstallerBridge [![GitHub issues](https://img.shields.io/github/issues/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/issues) [![GitHub forks](https://img.shields.io/github/forks/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/network) [![GitHub stars](https://img.shields.io/github/stars/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/stargazers) [![GitHub license](https://img.shields.io/github/license/antony-jr/QInstallerBridge.svg?style=flat-square)](https://github.com/antony-jr/QInstallerBridge/blob/master/LICENSE) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f68886cc517c4afda44bca08714cf3a6)](https://www.codacy.com/app/antony-jr/QInstallerBridge?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=antony-jr/QInstallerBridge&amp;utm_campaign=Badge_Grade)
 
 
