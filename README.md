@@ -131,6 +131,9 @@ The best part is that QInstallerBridge is just a **header!**
  $ git submodule init
  $ git submodule add https://github.com/antony-jr/QInstallerBridge
  $ git submodule update
+ $ cd QInstallerBridge
+ $ git submodule init
+ $ git submodule update
 ```
 
 **Refer** the **documentation** for more information on compiling. (Will be available soon)
