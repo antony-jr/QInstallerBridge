@@ -18,6 +18,27 @@ cross-platform gui installer but the one thing that sucks is that Qt does not pr
 that did work as a hotfix but I needed a **solid** and **clean API** to communicate with Qt's Maintanance Tool and   
 thus **QInstallerBridge** was born.
 
+
+**QInstallerBridge** is a small header writen in C++ using Qt5 , This supports async structure and thus it is best suited for your   
+Qt Projects.   
+**QInstallerBridge** does not depend on **Qt's Maintanance Tool** , it just works on its own and handles Qt's Remote Repo very well.   
+**It also communicates with the Maintanance Tool's configuration** to make the Maintanance Tool know that we have updated to the   
+latest version. This makes **QInstallerBridge** to act without **Maintanance Tool** and also flows with it!   
+
+**You can also just distribute your app with components.xml to use QtInstallerBridge without the Qt Installer Framework**
+Cool , Right ?...
+
+**Note** : Eventhough you do not need to install your packages with Qt Installer Framework , you need Qt' Remote Repo.   
+           Which is generated with **repogen** from the Qt Installer Framework.
+
+**Warning** : The **components.xml** should match the configuration with Qt's Remote Repo's **Updates.xml**.
+              That is common sense , right ?...
+              
+Please refer the **documentation** for more information. ( Will soon be available! )
+
+
+**Open issues** if you have any doubts , I will gladly answer you :heart: !
+
 ### Some Cool Folks who use QProcess to Auto Update
 
 * [Skycoder42](https://github.com/Skycoder42/QtAutoUpdater)
@@ -33,7 +54,64 @@ thus **QInstallerBridge** was born.
     
     **AutoUpdater-Qt** does not provide a async structure too and thus it is impossible to make your own AutoUpdate Windows!
     But I recommend this if you want a very quick fix for non-production ready apps!
+    
+    **Disclaimer** : No offence but , This tool only handles with zip files and there is no documentation.   
+                     I don't know anything specific about this project!
 
+           
+           
+# Usage
+**I think is simple ?**
+
+```
+
+#include <QCoreApplication>
+#include "../../QInstallerBridge.hpp"
+
+int main(int argc, char **argv)
+{
+    QCoreApplication app(argc, argv);
+    QInstallerBridge Bridge(
+    // Qt Remote Repo by repogen
+    "https://raw.githubusercontent.com/antony-jr/exercism-installer/master/exercism-installers/linux/repo",
+    // This is the default location for components.xml , always present with Maintanance Tool's Path.
+    "components.xml",
+    // Installation Path , This is also true for most packages
+    "./",
+    // Debug or not !
+    true);
+    
+    QObject::connect(&Bridge, &QInstallerBridge::updatesList, [&](QVector<PackageUpdate> list) {
+        if(list.isEmpty()) { // Everything is safe eventhough you don't have this if
+            qDebug() << "No Updates Available!";
+            app.quit();
+            return;
+        }
+        qDebug() << "New Updates Available(" << list.size() << ")";
+        for(int it = 0; it < list.size() ; ++it) {
+            qDebug() << "Package Name ->" << list.at(it).PackageName;
+            qDebug() << "Version ->" << list.at(it).Version;
+        }
+        Bridge.DownloadUpdates();
+    });
+    QObject::connect(&Bridge, &QInstallerBridge::updatesDownloaded,
+    [&]() {
+        Bridge.InstallUpdates();
+        return;
+    });
+    QObject::connect(&Bridge, &QInstallerBridge::updatesInstalled,
+    [&]() {
+        qDebug() << "QInstallerBridge::Installed Update!";
+        app.quit();
+        return;
+    });
+    Bridge.CheckForUpdates();
+    return app.exec();
+}
+
+```
+
+**Refer the documentation for more information** ( Soon will be available! )
 
 # Support [![Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/antonyjr/donate) [![Twitter](https://img.shields.io/twitter/url/https/github.com/antony-jr/QInstallerBridge.svg?style=social)](https://twitter.com/intent/tweet?text=Checkout%20%23QInstallerBridge%20by%20%40antonyjr0%20%20%2C%20its%20cool.%20Try%20it%20at%20https%3A%2F%2Fgithub.com%2Fantony-jr%2FQInstallerBridge)
 
