@@ -118,8 +118,8 @@ int main(int argc, char **argv)
 The best part is that QInstallerBridge is just a **header!**
 
 ```
- $ wget "https://github.com/antony-jr/QInstallerBridge/releases/download/v0.0.1/QInstallerBridge-v0.0.1.tar.gz"
- $ tar -xvf QInstallerBridge-v0.0.1.tar.gz
+ $ wget "https://git.io/vbQ5n"
+ $ tar -xvf QInstallerBridge-vx.y.z.tar.gz
  $ # Thats it , You just need to download the files!
 ```
 
