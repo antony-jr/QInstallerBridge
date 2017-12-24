@@ -49,7 +49,7 @@ Please refer the **documentation** for more information. ( Will soon be availabl
 
 ### Some Similar Projects
 
-* [SpeedDevotion](https://github.com/speedovation/AutoUpdater-Qt)   
+* [AutoUpdater-Qt by speedovation](https://github.com/speedovation/AutoUpdater-Qt)   
        
     The disadvantage in this project is that , it does not communicate with the Qt Maintanance Tool and thus the user is forced   
     to use Qt Installer Framework only or the authors AutoUpdater Only. And you cannot update the updater itself!
