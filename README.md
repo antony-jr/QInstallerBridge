@@ -117,10 +117,14 @@ int main(int argc, char **argv)
 
 The best part is that QInstallerBridge is just a **header!**
 
+**Please check the releases!**
+**Replace** , **x,y, and z** with the version number that you want.
+
 ```
- $ wget "https://git.io/vbQ5n"
- $ tar -xvf QInstallerBridge-vx.y.z.tar.gz
- $ # Thats it , You just need to download the files!
+ $ wget \
+  "https://github.com/antony-jr/QInstallerBridge/releases/download/vx.y.z/QInstallerBridge-vx.y.z.tar.gz"
+ $ tar -xvf QInstallerBridge-vx.y.z.tar.gz # There is a zip too
+ $ # Thats it , You just need to download the header
 ```
 
 **Refer** the **documentation** for more information on compiling. (Will be available soon)
