@@ -19,25 +19,27 @@ that did work as a hotfix but I needed a **solid** and **clean API** to communic
 thus **QInstallerBridge** was born.
 
 
-**QInstallerBridge** is a small header writen in C++ using Qt5 , This supports async structure and thus it is best suited for your   
-Qt Projects.   
-**QInstallerBridge** does not depend on **Qt's Maintanance Tool** , it just works on its own and handles Qt's Remote Repo very well.   
-**It also communicates with the Maintanance Tool's configuration** to make the Maintanance Tool know that we have updated to the   
-latest version. This makes **QInstallerBridge** to act without **Maintanance Tool** and also flows with it!   
+**QInstallerBridge** is a small header writen in C++ using Qt5 , This supports async structure and thus it is best suited   
+for your Qt Projects.   
+**QInstallerBridge** does not depend on **Qt's Maintanance Tool** , it just works on its own and handles Qt's Remote Repo   
+very well. **It also communicates with the Maintanance Tool's configuration** to make the Maintanance Tool know that we have   
+updated to the latest version. This makes **QInstallerBridge** to act without **Maintanance Tool** and also flows with it!   
 
 **You can also just distribute your app with components.xml to use QtInstallerBridge without the Qt Installer Framework**
 Cool , Right ?...
 
+
 **Note** : Eventhough you do not need to install your packages with Qt Installer Framework , you need Qt' Remote Repo.   
            Which is generated with **repogen** from the Qt Installer Framework.
 
-**Warning** : The **components.xml** should match the configuration with Qt's Remote Repo's **Updates.xml**.
+**Warning** : The **components.xml** should match the configuration with Qt's Remote Repo's **Updates.xml**.   
               That is common sense , right ?...
               
+
 Please refer the **documentation** for more information. ( Will soon be available! )
-
-
 **Open issues** if you have any doubts , I will gladly answer you :heart: !
+
+
 
 ### Some Cool Folks who use QProcess to Auto Update
 
@@ -66,7 +68,7 @@ Please refer the **documentation** for more information. ( Will soon be availabl
 ```
 
 #include <QCoreApplication>
-#include "../../QInstallerBridge.hpp"
+#include "QInstallerBridge/QInstallerBridge.hpp"
 
 int main(int argc, char **argv)
 {
@@ -82,16 +84,12 @@ int main(int argc, char **argv)
     true);
     
     QObject::connect(&Bridge, &QInstallerBridge::updatesList, [&](QVector<PackageUpdate> list) {
-        if(list.isEmpty()) { // Everything is safe eventhough you don't have this if
+        if(list.isEmpty()) { // Everything is safe eventhough you don't have this 'if'
             qDebug() << "No Updates Available!";
             app.quit();
             return;
         }
-        qDebug() << "New Updates Available(" << list.size() << ")";
-        for(int it = 0; it < list.size() ; ++it) {
-            qDebug() << "Package Name ->" << list.at(it).PackageName;
-            qDebug() << "Version ->" << list.at(it).Version;
-        }
+        qDebug() << "New Updates Available(" << list.size() << ")"; // do whatever with the list.
         Bridge.DownloadUpdates();
     });
     QObject::connect(&Bridge, &QInstallerBridge::updatesDownloaded,
