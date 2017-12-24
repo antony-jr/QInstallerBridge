@@ -26,12 +26,13 @@ thus **QInstallerBridge** was born.
 
 ### Some Similar Projects
 
-* [SpeedDevotion](https://github.com/speedovation/AutoUpdater-Qt)
+* [SpeedDevotion](https://github.com/speedovation/AutoUpdater-Qt)   
+       
     The disadvantage in this project is that , it does not communicate with the Qt Maintanance Tool and thus the user is forced   
     to use Qt Installer Framework only or the authors AutoUpdater Only. And you cannot update the updater itself!
     
     **AutoUpdater-Qt** does not provide a async structure too and thus it is impossible to make your own AutoUpdate Windows!
-    But I recommend this if you want a nasty and quick fix!
+    But I recommend this if you want a very quick fix for non-production ready apps!
 
 
 # Support [![Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/antonyjr/donate) [![Twitter](https://img.shields.io/twitter/url/https/github.com/antony-jr/QInstallerBridge.svg?style=social)](https://twitter.com/intent/tweet?text=Checkout%20%23QInstallerBridge%20by%20%40antonyjr0%20%20%2C%20its%20cool.%20Try%20it%20at%20https%3A%2F%2Fgithub.com%2Fantony-jr%2FQInstallerBridge)
