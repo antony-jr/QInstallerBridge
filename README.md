@@ -63,7 +63,7 @@ Please refer the **documentation** for more information. ( Will soon be availabl
            
            
 # Usage
-**I think is simple ?**
+**I think its simple ?**
 
 ```
 
