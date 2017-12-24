@@ -142,7 +142,7 @@ The best part is that QInstallerBridge is just a **header!**
 
 # Thank You ![Thank You](https://img.shields.io/badge/Always-Say%20Thank%20You!-blue.svg?style=flat-square)
 
-I really need to thank the developers of this libraries for creating it because QEasyDownloader is elegant because of them! :heart:   
+I really need to thank the developers of this libraries for creating it because QInstallerBridge is elegant because of them! :heart:   
 
 * [Qt](https://github.com/qt)
 
