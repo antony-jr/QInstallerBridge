@@ -545,7 +545,7 @@ public slots:
 
     void InstallUpdates()
     {
-	if(CachedPackagesData.Empty())
+	if(CachedPackagesData.isEmpty())
 	{
 		return;
 	}
