@@ -215,7 +215,6 @@ public:
         return;
     }
 
-
     void setRepoLink(const QString& repoLink)
     {
         this->repoLink = repoLink;
@@ -417,6 +416,15 @@ private slots:
         return;
     }
 
+    bool isEmptyConfiguration()
+    {
+	 return (
+		repoLink.isEmpty() ||
+		componentsXML.isEmpty() ||
+		installationPath.isEmpty()
+		);
+    }
+
     void FreeTemporaryFiles()
     {
         for(int item = 0; item < CachedTemporaryFiles.size() ; ++item) {
@@ -434,6 +442,13 @@ public slots:
             qDebug() << "QInstallerBridge::Checking for updates";
             qDebug() << "QInstallerBridge::Collecting online information.";
         }
+
+	if(isEmptyConfiguration()){
+	    if(debug){
+		qDebug() << "QInstallerBridge::Empty Configuration!";
+	    }
+	    return;
+	}
 
         Updates.clear(); // clear previous updates!
 
@@ -530,6 +545,11 @@ public slots:
 
     void InstallUpdates()
     {
+	if(CachedPackagesData.Empty())
+	{
+		return;
+	}
+
         connect(&Archiver, &QArchive::Extractor::status,
         [&](const QString& Archive,const QString& file) {
             (void)Archive;
@@ -578,6 +598,7 @@ public slots:
     {
         if(Archiver.isRunning()) {
             Archiver.requestInterruption();
+	    Archiver.wait();
         }
         FreeTemporaryFiles();
         emit InstallationAborted();
