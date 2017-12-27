@@ -122,7 +122,7 @@ The best part is that QInstallerBridge is just a **header!**
 You just need the header and nothing else.
 
 ```
- $ curl -L "" | bash
+ $ curl -L "https://git.io/vbdkW" | bash
 ```
 
 **Refer** the **documentation** for more information on compiling. (Will be available soon)
