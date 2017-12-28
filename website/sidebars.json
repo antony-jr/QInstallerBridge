@@ -1,20 +1,13 @@
 {
   "docs": {
     "Getting Started": [ 
-	   "Installation",
-	   "AddingQArchive"
+	   "Installation"
     ],
     "Guides" : [
-	   "UsingExtractor",
-	   "UsingCompressor",
-	   "UsingReader"
+	   "UsingInstallerBridge"
     ],
     "API" : [
-	   "QArchiveFormats",
-	   "QArchiveErrorCodes",
-	   "QArchiveExtractor",
-	   "QArchiveCompressor",
-	   "QArchiveReader"
+	   "QInstallerBridgeErrorCodes"
     ]
   }
 }
