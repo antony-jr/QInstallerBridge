@@ -102,7 +102,7 @@ class Index extends React.Component {
               contents={[
                 {
                   content: 'QInstallerBridge fully supports Qt Projects by flowing with its event loop and'+
-			   ' thus you will have no problem integrating QArchive with your Qt Project.',
+			   ' thus you will have no problem integrating QInstallerBridge with your Qt Project.',
                   image: siteConfig.baseUrl + 'img/qt.png',
                   imageAlign: 'top',
                   title: 'Supports Qt\'s Event Loop.',
