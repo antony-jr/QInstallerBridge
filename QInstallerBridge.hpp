@@ -32,8 +32,8 @@
  * -----------------------------------------------------------------------------
  *
  *  @filename		: QInstallerBridge.hpp
- *  @description	: A small header writen in C++ using Qt5 to communicate 
- *  			  with the Qt Installer Framework. This header helps you 
+ *  @description	: A small header writen in C++ using Qt5 to communicate
+ *  			  with the Qt Installer Framework. This header helps you
  *  			  to check the remote repo and also update to the latest.
  *
  * -----------------------------------------------------------------------------
@@ -47,39 +47,6 @@
 #include <QDomElement>
 #include "QArchive/QArchive.hpp"
 #include "QEasyDownloader/QEasyDownloader.hpp"
-
-/*
- * Error Codes
-*/
-#define COMPONENTS_XML_NOT_FOUND -1
-#define COMPONENTS_XML_SYNTAX_ERROR -2
-#define TEMP_FILE_OPEN_ERROR -3
-#define NETWORK_ERROR -4
-#define UPDATES_XML_NOT_FOUND -5
-#define UPDATES_XML_SYNTAX_ERROR -6
-#define SHA1_KEY_MISMATCH -7
-#define UNKNOWN_ERROR -8
-
-/*
- * Semver
-*/
-#define MAJOR 0
-#define MINOR 1
-#define PATCH 2
-
-
-/*
- * Structure PackageUpdate
- * -----------------------
- *  Contains the information for a package update!
-*/
-typedef struct {
-    QString PackageName;
-    QString Description;
-    QString Version;
-    QString DownloadableArchives;
-    QString SHA1;
-} PackageUpdate;
 
 /*
  * Class QInstallerBridge  <- Inherits QObject
@@ -173,6 +140,42 @@ class QInstallerBridge : public QObject
 {
     Q_OBJECT
 public:
+    /*
+     * Structure PackageUpdate
+     * -----------------------
+     *  Contains the information for a package update!
+    */
+    typedef struct {
+        QString PackageName;
+        QString Description;
+        QString Version;
+        QString DownloadableArchives;
+        QString SHA1;
+    } PackageUpdate;
+
+    /*
+     * SemVer!
+    */
+    enum {
+        MAJOR,
+        MINOR,
+        PATCH
+    };
+
+    /*
+     * Error codes!
+    */
+    enum {
+        COMPONENTS_XML_NOT_FOUND = -1,
+        COMPONENTS_XML_SYNTAX_ERROR = -2,
+        TEMP_FILE_OPEN_ERROR = -3,
+        NETWORK_ERROR = -4,
+        UPDATES_XML_NOT_FOUND = -5,
+        UPDATES_XML_SYNTAX_ERROR = -6,
+        SHA1_KEY_MISMATCH = -7,
+        UNKNOWN_ERROR = -8
+    };
+
     explicit QInstallerBridge(QObject *p = 0)
         : QObject(p)
     {
@@ -421,11 +424,11 @@ private slots:
 
     bool isEmptyConfiguration()
     {
-	 return (
-		repoLink.isEmpty() ||
-		componentsXML.isEmpty() ||
-		installationPath.isEmpty()
-		);
+        return (
+                   repoLink.isEmpty() ||
+                   componentsXML.isEmpty() ||
+                   installationPath.isEmpty()
+               );
     }
 
     void FreeTemporaryFiles()
@@ -446,12 +449,12 @@ public slots:
             qDebug() << "QInstallerBridge::Collecting online information.";
         }
 
-	if(isEmptyConfiguration()){
-	    if(debug){
-		qDebug() << "QInstallerBridge::Empty Configuration!";
-	    }
-	    return;
-	}
+        if(isEmptyConfiguration()) {
+            if(debug) {
+                qDebug() << "QInstallerBridge::Empty Configuration!";
+            }
+            return;
+        }
 
         Updates.clear(); // clear previous updates!
 
@@ -468,8 +471,8 @@ public slots:
                 SLOT(RepoSync(const QString&)));
         connect(&DownloadManager, &QEasyDownloader::Error,
         [&](QNetworkReply::NetworkError errorCode, const QUrl &url, const QString &fileName) {
-	    (void)errorCode;
-	    emit error(NETWORK_ERROR,url.toString() + " :: " + fileName);
+            (void)errorCode;
+            emit error(NETWORK_ERROR,url.toString() + " :: " + fileName);
             return;
         });
 
@@ -548,10 +551,9 @@ public slots:
 
     void InstallUpdates()
     {
-	if(CachedPackagesData.isEmpty())
-	{
-		return;
-	}
+        if(CachedPackagesData.isEmpty()) {
+            return;
+        }
 
         connect(&Archiver, &QArchive::Extractor::status,
         [&](const QString& Archive,const QString& file) {
@@ -601,7 +603,7 @@ public slots:
     {
         if(Archiver.isRunning()) {
             Archiver.requestInterruption();
-	    Archiver.wait();
+            Archiver.wait();
         }
         FreeTemporaryFiles();
         emit InstallationAborted();

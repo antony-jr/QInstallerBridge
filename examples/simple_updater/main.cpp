@@ -8,11 +8,11 @@ int main(int argc, char **argv)
                             "components.xml",
                             "./",
                             false);
-    QObject::connect(&Bridge, &QInstallerBridge::updatesList, [&](QVector<PackageUpdate> list) {
+    QObject::connect(&Bridge, &QInstallerBridge::updatesList, [&](QVector<QInstallerBridge::PackageUpdate> list) {
         if(list.isEmpty()) {
             qDebug() << "No Updates Available!";
             app.quit();
-	    return;
+            return;
         }
         qDebug() << "Downloading " << list.size() << "Packages!";
         for(int it = 0; it < list.size() ; ++it) {
