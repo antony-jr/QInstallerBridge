@@ -32,7 +32,10 @@
  * -----------------------------------------------------------------------------
  *
  *  @filename		: QInstallerBridge.hpp
- *  @description	: Header file for the QInstallerBridge.
+ *  @description	: A small header writen in C++ using Qt5 to communicate 
+ *  			  with the Qt Installer Framework. This header helps you 
+ *  			  to check the remote repo and also update to the latest.
+ *
  * -----------------------------------------------------------------------------
 */
 #if !defined(QINSTALLER_BRIDGE_HPP_INCLUDED)
