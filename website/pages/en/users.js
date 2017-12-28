@@ -32,7 +32,7 @@ class Users extends React.Component {
             </div>
             <div className="logos">{showcase}</div>
             <a
-              href="https://github.com/antony-jr/QArchive/edit/master/website/siteConfig.js"
+              href="https://github.com/antony-jr/QInstallerBridge/edit/master/website/siteConfig.js"
               className="button">
               List Yours Too!
             </a>

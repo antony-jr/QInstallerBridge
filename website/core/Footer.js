@@ -29,12 +29,12 @@ class Footer extends React.Component {
               Getting Started
             </a>
             <a
-              href={`${this.props.config.baseUrl}docs/UsingExtractor.html`}
+              href={`${this.props.config.baseUrl}docs/UsingDownloader.html`}
 	    >
               Guides
             </a>
             <a
-              href={`${this.props.config.baseUrl}docs/QArchiveFormats.html`}
+              href={`${this.props.config.baseUrl}docs/QInstallerBridgeErrorCodes.html`}
 	    >
               API Reference
             </a>
@@ -48,24 +48,24 @@ class Footer extends React.Component {
               User Showcase
             </a>
             <a
-              href="http://stackoverflow.com/questions/tagged/Qt/"
+              href="http://stackoverflow.com/questions/tagged/QtInstallerFramework/"
               target="_blank">
               Stack Overflow
             </a>
             <a href="https://discordapp.com/">Project Chat</a>
-            <a href="https://twitter.com/antony-jr" target="_blank">
+            <a href="https://twitter.com/antonyjr0" target="_blank">
               Twitter
             </a>
           </div>
           <div>
             <h5>More</h5>
             <a href={this.props.config.baseUrl + 'blog'}>Blog</a>
-            <a href="https://github.com/antony-jr/QArchive">GitHub</a>
+            <a href="https://github.com/antony-jr/QInstallerBridge">GitHub</a>
             <a
               className="github-button"
               href={this.props.config.repoUrl}
               data-icon="octicon-star"
-              data-count-href="/antony-jr/QArchive/stargazers"
+              data-count-href="/antony-jr/QInstallerBridge/stargazers"
               data-show-count={true}
               data-count-aria-label="# stargazers on GitHub"
               aria-label="Star this project on GitHub">

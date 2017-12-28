@@ -37,7 +37,7 @@ class HomeSplash extends React.Component {
         <div className="homeSplashFade">
           <div className="wrapper homeWrapper">
             <div className="projectLogo">
-              <img src={siteConfig.baseUrl + 'img/QArchive.png'} />
+              <img src={siteConfig.baseUrl + 'img/QInstallerBridge.png'} />
             </div>
             <div className="inner">
               <h2 className="projectTitle">
@@ -59,11 +59,11 @@ class HomeSplash extends React.Component {
                       href={
                         siteConfig.baseUrl +
                         'docs/' +
-                        'QArchiveFormats.html'
+                        'QInstallerBridgeErrorCodes.html'
                       }>
                       API Reference
                     </Button>
-	            <Button href={'https://github.com/antony-jr/QArchive'}>
+	            <Button href={'https://github.com/antony-jr/QInstallerBridge'}>
 	    	      View on Github
 	    	    </Button>
                   </div>
@@ -101,22 +101,14 @@ class Index extends React.Component {
               align="center"
               contents={[
                 {
-                  content: 'QArchive fully supports Qt Projects by flowing with its event loop and'+
+                  content: 'QInstallerBridge fully supports Qt Projects by flowing with its event loop and'+
 			   ' thus you will have no problem integrating QArchive with your Qt Project.',
                   image: siteConfig.baseUrl + 'img/qt.png',
                   imageAlign: 'top',
                   title: 'Supports Qt\'s Event Loop.',
                 },
-                {
-                  content: 'Whatever archive you throw at QArchive , it will never fail you Because its' +
-			   ' backed by a very stable project ( libarchive ) and so giving you a lot of options '+
-			   'with a clean C++ API.',
-                  image: siteConfig.baseUrl + 'img/extract.png',
-                  imageAlign: 'top',
-                  title: 'Works with a Wide Range of Archive Formats.',
-                },
 		{
-                  content: 'QArchive does not like leaving heavy traces for the users and thus '+
+                  content: 'QInstallerBridge does not like leaving heavy traces for the users and thus '+
                            'it is packed with all its amazing features in a single C++ header file , this ' +
                            'makes QArchive easier to integrate with your project.',
                   image: siteConfig.baseUrl + 'img/header.png',

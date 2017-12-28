@@ -18,7 +18,7 @@ class Help extends React.Component {
     const supportLinks = [
       {
         content:
-          'Learn more using the [documentation on this site.](/QArchive/docs/Installation.html)',
+          'Learn more using the [documentation on this site.](/QInstallerBridge/docs/Installation.html)',
         title: 'Browse Docs',
       },
       {
@@ -27,7 +27,7 @@ class Help extends React.Component {
         title: 'Ask the Author',
       },
       {
-        content: "If you ever face any problem , please raise a <a href='https://github.com/antony-jr/QArchive/issues/new'>"+
+        content: "If you ever face any problem , please raise a <a href='https://github.com/antony-jr/QInstallerBridge/issues/new'>"+
 	      	 "Issue</a> to get it fixed asap!",
         title: 'Open an Issue on GitHub',
       },
