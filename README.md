@@ -64,74 +64,18 @@ Please refer the **documentation** for more information. ( Will soon be availabl
 
            
            
-# Usage
-**I think its simple ?**
+<!-- $ curl -L "https://git.io/vbdkW" | bash-->
 
-```
+# Getting Started
 
-#include <QCoreApplication>
-#include "QInstallerBridge/QInstallerBridge.hpp"
-
-int main(int argc, char **argv)
-{
-    QCoreApplication app(argc, argv);
-    QInstallerBridge Bridge(
-    // Qt Remote Repo by repogen
-    "https://raw.githubusercontent.com/antony-jr/exercism-installer/master/exercism-installers/linux/repo",
-    // This is the default location for components.xml , always present with Maintanance Tool's Path.
-    "components.xml",
-    // Installation Path , This is also true for most packages
-    "./",
-    // Debug or not !
-    true);
-    
-    QObject::connect(&Bridge, &QInstallerBridge::updatesList, [&](QVector<PackageUpdate> list) {
-        if(list.isEmpty()) { // Everything is safe eventhough you don't have this 'if'
-            qDebug() << "No Updates Available!";
-            app.quit();
-            return;
-        }
-        qDebug() << "New Updates Available(" << list.size() << ")"; // do whatever with the list.
-        Bridge.DownloadUpdates();
-    });
-    QObject::connect(&Bridge, &QInstallerBridge::updatesDownloaded,
-    [&]() {
-        Bridge.InstallUpdates();
-        return;
-    });
-    QObject::connect(&Bridge, &QInstallerBridge::updatesInstalled,
-    [&]() {
-        qDebug() << "QInstallerBridge::Installed Update!";
-        app.quit();
-        return;
-    });
-    Bridge.CheckForUpdates();
-    return app.exec();
-}
-
-```
-
-**Refer the documentation for more information** ( Soon will be available! )
-
-
-# Installation
-
-The best part is that QInstallerBridge is just a **header!**
-
-**For Windows and Mac , Please check the releases!**   
-You just need the header and nothing else.
-
-```
- $ curl -L "https://git.io/vbdkW" | bash
-```
-
-**Refer** the **documentation** for more information on compiling. (Will be available soon)
-
+Learn more about **QInstallerBridge** at the official [QInstallerBridge Documentation](https://antony-jr.github.io/QInstallerBridge)
 
 # Thank You ![Thank You](https://img.shields.io/badge/Always-Say%20Thank%20You!-blue.svg?style=flat-square)
 
 I really need to thank the developers of this libraries for creating it because QInstallerBridge is elegant because of them! :heart:   
 
+* [QArchive](https://github.com/antony-jr/QArchive)
+* [QEasyDownloader](https://github.com/antony-jr/QEasyDownloader)
 * [Qt](https://github.com/qt)
 
 # Support [![Liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/antonyjr/donate) [![Twitter](https://img.shields.io/twitter/url/https/github.com/antony-jr/QInstallerBridge.svg?style=social)](https://twitter.com/intent/tweet?text=Checkout%20%23QInstallerBridge%20by%20%40antonyjr0%20%20%2C%20its%20cool.%20Try%20it%20at%20https%3A%2F%2Fgithub.com%2Fantony-jr%2FQInstallerBridge)
