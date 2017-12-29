@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+    <channel>
+        <title>QInstallerBridge Blog</title>
+        <link>https://antony-jr.github.io/blog</link>
+        <description>The best place to stay up-to-date with the latest QInstallerBridge news and events.</description>
+        <lastBuildDate>Wed, 27 Dec 2017 06:00:00 GMT</lastBuildDate>
+        <docs>http://blogs.law.harvard.edu/tech/rss</docs>
+        <generator>Feed for Node.js</generator>
+        <image>
+            <title>QInstallerBridge Blog</title>
+            <url>https://antony-jr.github.ioimg/QInstallerBridge.png</url>
+            <link>https://antony-jr.github.io/blog</link>
+        </image>
+        <copyright>Copyright © 2017 Antony Jr.</copyright>
+        <item>
+            <title><![CDATA[Publishing the official documentation for QInstallerBridge]]></title>
+            <link>https://antony-jr.github.io/blog/2017/12/27/publishing-official-documentation.html</link>
+            <guid>https://antony-jr.github.io/blog/2017/12/27/publishing-official-documentation.html</guid>
+            <pubDate>Wed, 27 Dec 2017 06:00:00 GMT</pubDate>
+            <description><![CDATA[Hey everyone , After using **slash** with **QArchive** I was so much satisfied and thus   
+I totally switched to **docusaurus** for all my documentations , it feels really good   
+to create awesome **documentations!**.   
+
+**I think** users will lear]]></description>
+        </item>
+    </channel>
+</rss>

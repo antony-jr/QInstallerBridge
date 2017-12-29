@@ -1,6 +1,0 @@
-[submodule "QArchive"]
-	path = QArchive
-	url = ssh+git://git@github.com/antony-jr/QArchive
-[submodule "QEasyDownloader"]
-	path = QEasyDownloader
-	url = ssh+git://git@github.com/antony-jr/QEasyDownloader
