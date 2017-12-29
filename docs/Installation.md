@@ -19,7 +19,7 @@ without the maintainance tool and thus makes your code clean.
 
 ## Dependencies
 
-* [Qt Installer Framwork Binaries](https://wiki.qt.io/Qt-Installer-Framework)   
+* [Qt Installer Framework Binaries](https://wiki.qt.io/Qt-Installer-Framework)   
 	
 	Qt Installer Framework provides the tools required to create a installer   
 	and also helps you to create a **Qt remote repo** which is used by the   
@@ -32,6 +32,11 @@ without the maintainance tool and thus makes your code clean.
 	use Qt for your **GUI** Projects. And the best part is , its **Open Source**.   
 	Make sure to install it too.
 
+* [libarchive](https://github.com/libarchive/libarchive)   
+
+	Before using **QInstallerBridge** make sure you have installed **libarchive** , its   
+	kinda of a famous **library** so most of the linux distros have it listed   
+	in their **repository**. This is one of dependencies of **QArchive**.
 
 ## Installing the latest release from github
 

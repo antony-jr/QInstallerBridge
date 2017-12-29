@@ -1,13 +1,16 @@
 {
   "docs": {
     "Getting Started": [ 
-	   "Installation"
+	   "Installation",
+	   "AddingQInstallerBridge"
     ],
     "Guides" : [
 	   "UsingInstallerBridge"
     ],
     "API" : [
-	   "QInstallerBridgeErrorCodes"
+	   "QInstallerBridgeErrorCodes",
+	   "StructurePackageUpdate",
+	   "ClassQInstallerBridge"
     ]
   }
 }
