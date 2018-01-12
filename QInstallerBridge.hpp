@@ -601,12 +601,20 @@ public slots:
 
     void AbortInstallation()
     {
+        /*
+         * Thanks to QArchive v0.0.3  ,
+         * this is handled with elegance!
+        */
+        connect(&Archiver, &QArchive::Extractor::stopped,
+        [&]() {
+            FreeTemporaryFiles();
+            emit InstallationAborted();
+            return;
+        });
+
         if(Archiver.isRunning()) {
-            Archiver.requestInterruption();
-            Archiver.wait();
+            Archiver.stop();
         }
-        FreeTemporaryFiles();
-        emit InstallationAborted();
         return;
     }
 signals:

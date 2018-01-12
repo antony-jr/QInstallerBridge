@@ -94,7 +94,7 @@ TEMPLATE=app
 TARGET=Update
 
 LIBS += -larchive
-QT += core network xml
+QT += core network xml concurrent
 HEADERS += QInstallerBridge/QInstallerBridge.hpp \
            QInstallerBridge/QArchive/QArchive.hpp \
            QInstallerBridge/QEasyDownloader/QEasyDownloader.hpp
@@ -106,9 +106,9 @@ HEADERS += QInstallerBridge/QInstallerBridge.hpp \
 ```
  $ mkdir build
  $ cd build
- $ qmake ../simple_update.pro
+ $ qmake ..
  $ make -j4
- $ cp ../components.xml 
+ $ cp ../components.xml .
  $ ./Update # Downloads the latest version and installs them
 ```
 
