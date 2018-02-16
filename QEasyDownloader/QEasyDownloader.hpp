@@ -34,6 +34,7 @@
  *  @description 	: A Simple and Powerful Downloader Header writen in C++
  *  			  with Qt5. This small header helps you Download and
  *  			  Resume Downloads Elegantly , Only for HTTP.
+ *  @tag		: v0.0.5-rev2
  * -----------------------------------------------------------------------------
 */
 #if !defined(QEASY_DOWNLOADER_HPP_INCLUDED)
@@ -43,6 +44,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
+#define NONEED(x) (void)x
 
 /*
  * Class QEasyDownloader <- Inherits QObject
@@ -58,6 +60,8 @@
  *
  *  Methods:
  *  	void Debug(bool) -  Enable or Disable Debuging
+ *  	void Iterated(bool) - Enable iterated Downloading.
+ *  			      ( i.e Download a file in Queue , Stop , Get Approved then Download again.)
  *  	void ResumeDownloads(bool) - Enable or Disable Resuming of Downloads!
  *
  *  	Warning: Disabling Resuming of Downloads will overwrite the file if found!
@@ -108,11 +112,18 @@ public:
         : QObject(parent)
     {
         _pManager = (toUseManager == NULL) ? new QNetworkAccessManager(this) : toUseManager;
+        _pManager->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
         connect(_pManager, &QNetworkAccessManager::networkAccessibleChanged, this, &QEasyDownloader::Retry);
     }
     void Debug(bool ch)
     {
         doDebug = ch;
+        return;
+    }
+
+    void Iterated(bool ch)
+    {
+        doIterate = ch;
         return;
     }
 
@@ -162,6 +173,7 @@ private slots:
         connect(&_Timer, SIGNAL(timeout()), this, SLOT(timeout()));
 
         _Timer.start();
+        downloadSpeed.start();
 
         connect(_pCurrentReply, SIGNAL(finished()), this, SLOT(finished()));
         connect(_pCurrentReply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(downloadProgress(qint64,qint64)));
@@ -170,27 +182,78 @@ private slots:
         return;
     }
 
-    void finishedHead()
+    void checkHead(qint64 bytesRecived, qint64 bytesTotal)
     {
+
+        NONEED(bytesRecived); // We do not need any progress.
+
+        /*
+         * Disconnect the reply as soon as possible since it may cause collison.
+        */
+        disconnect(_pCurrentReply, SIGNAL(downloadProgress(qint64, qint64)),
+                   this, SLOT(checkHead(qint64, qint64)));
+
+
         _Timer.stop();
         _bAcceptRanges = false;
 
-        if (_pCurrentReply->hasRawHeader("Accept-Ranges") && doResumeDownloads) {
+
+        _nDownloadTotal = bytesTotal; // less expensive than parsing the content length header.
+        if(_pCurrentReply->attribute( QNetworkRequest::HttpStatusCodeAttribute ).toInt() >= 400) {
+            if(doDebug) {
+                qDebug() << "QEasyDownloader::HTTP ERROR::"
+                         << _pCurrentReply->attribute( QNetworkRequest::HttpStatusCodeAttribute ).toInt();
+            }
+            if(!doIterate) {
+                startNextDownload();
+            } else {
+                canIterate = true;
+            }
+            return;
+        }
+
+        if (_pCurrentReply->hasRawHeader("Accept-Ranges")) {
             QString qstrAcceptRanges = _pCurrentReply->rawHeader("Accept-Ranges");
             _bAcceptRanges = (qstrAcceptRanges.compare("bytes", Qt::CaseInsensitive) == 0);
         }
 
-        _nDownloadTotal = _pCurrentReply->header(QNetworkRequest::ContentLengthHeader).toInt();
+        /*
+         * Delete it little later.
+        */
+        _pCurrentReply->abort(); // stop the request.
+        _pCurrentReply->deleteLater();
+        _pCurrentReply = NULL;
 
+        /*
+         * Set the new request to download the file.
+         */
         _CurrentRequest.setRawHeader("Connection", "Keep-Alive");
         _CurrentRequest.setAttribute(QNetworkRequest::HttpPipeliningAllowedAttribute, true);
         _pFile = new QFile(_qsFileName);
+
+        /*
+         * Check if we want to delete the old file.
+        */
         if (!_bAcceptRanges) {
             _pFile->remove();
         }
-        _pFile->open(QIODevice::ReadWrite | QIODevice::Append);
+        if(!doResumeDownloads) {
+            _pFile->remove();
+        }
 
+        _pFile->open(QIODevice::ReadWrite | QIODevice::Append);
         _nDownloadSizeAtPause = _pFile->size();
+
+        /*
+         * If the total download size and download size at pause
+         * is equal then the file is fully retrived so no need
+         * to range request it again as it may give UnknownContentError
+        */
+        if(_nDownloadTotal == _nDownloadSizeAtPause) {
+            emit(finished());
+            return;
+        }
+
         download();
         return;
     }
@@ -209,8 +272,12 @@ private slots:
         _pFile = NULL;
         _pCurrentReply = 0;
 
+        if(!doIterate) {
+            startNextDownload();
+        } else {
+            canIterate = true;
+        }
         emit DownloadFinished(_URL, _qsFileName);
-        startNextDownload();
         return;
     }
 
@@ -218,10 +285,6 @@ private slots:
     {
         _Timer.stop();
 
-        if(_pCurrentReply->attribute( QNetworkRequest::HttpStatusCodeAttribute ).toInt() >= 300) {
-            startNextDownload();
-            return;
-        }
         _nDownloadSize = _nDownloadSizeAtPause + bytesReceived;
         _pFile->write(_pCurrentReply->readAll());
 
@@ -272,7 +335,8 @@ private slots:
         }
 
         if (downloadQueue.isEmpty()) {
-            emit Finished();
+            NewDownload = true;
+            emit(Finished());
             return;
         }
 
@@ -280,6 +344,7 @@ private slots:
             qDebug() << "QEasyDownloader::Starting Next Download!";
         }
         QStringList DownloadInformation = downloadQueue.dequeue();
+
         _URL = QUrl(DownloadInformation.at(0));
         _qsFileName = DownloadInformation.at(1);
 
@@ -291,28 +356,44 @@ private slots:
             return;
         }
 
+
         _nDownloadSize = 0;
         _nDownloadSizeAtPause = 0;
 
         _CurrentRequest = QNetworkRequest(_URL);
-        _pCurrentReply = _pManager->head(_CurrentRequest);
+
+        /*
+         * You may ask why we are not using HEAD ?
+         * Because in some servers HEAD request is not supported or
+         * not allowed but **range request** may be allowed.
+         * Example:- Amazon AWS.
+         *
+         * So to solve this , We check the head by giving a get request
+         * and abort it in a very short time. Getting all the information
+         * like HEAD but having the advantages of GET.
+        */
+        _pCurrentReply = _pManager->get(_CurrentRequest);
 
         _Timer.setInterval(_TimeoutTime);
         _Timer.setSingleShot(true);
 
         connect(&_Timer, SIGNAL(timeout()), this, SLOT(timeout()));
-
         _Timer.start();
-        downloadSpeed.start();
 
-        connect(_pCurrentReply, SIGNAL(finished()), this, SLOT(finishedHead()));
+        connect(_pCurrentReply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(checkHead(qint64,qint64)));
         connect(_pCurrentReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(error(QNetworkReply::NetworkError)));
-
         return;
     }
 
     void error(QNetworkReply::NetworkError errorCode)
     {
+        /*
+         * Avoid Operation cancel errors.
+        */
+        if(errorCode == QNetworkReply::OperationCanceledError) {
+            return;
+        }
+
         isError = true;
         if(doDebug) {
             qDebug() << "QEasyDownloader::error::" << errorCode;
@@ -352,10 +433,10 @@ public slots:
         QStringList DownloadInformation;
         DownloadInformation << givenURL << fileName;
         downloadQueue.enqueue(DownloadInformation);
-        ++_TotalCount;
 
-        if(_TotalCount == 1) {
-            QTimer::singleShot(0, this, SLOT(startNextDownload()));
+        if(NewDownload) { // Do not use downloadQueue.size() == 1.
+            NewDownload = false;
+            emit(startNextDownload());
         }
         return;
     }
@@ -409,6 +490,26 @@ public slots:
         return;
     }
 
+
+    bool isNext()
+    {
+        return !downloadQueue.isEmpty();
+    }
+
+    void Next()
+    {
+        if(!doIterate) {
+            return;
+        }
+
+        if(canIterate) {
+            emit(startNextDownload());
+            canIterate = false;
+        }
+        return;
+    }
+
+
     void Retry(QNetworkAccessManager::NetworkAccessibility access)
     {
         if(doDebug) {
@@ -434,7 +535,7 @@ public slots:
 
         connect(_pCurrentGetReply, &QNetworkReply::finished,
         [&]() {
-            if(_pCurrentGetReply->attribute( QNetworkRequest::HttpStatusCodeAttribute ).toInt() >= 300) {
+            if(_pCurrentGetReply->attribute( QNetworkRequest::HttpStatusCodeAttribute ).toInt() >= 400) {
                 return;
             }
 
@@ -487,12 +588,14 @@ private:
         _nDownloadSizeAtPause = 0,
         _DownloadedCount = 0,
         _TimeoutTime = 5000,
-        _RetryTime = 6000,
-        _TotalCount = 0;
+        _RetryTime = 6000;
     bool _bAcceptRanges = false,
          StopDownload = false,
          isError = false,
          doResumeDownloads = true,
+         NewDownload = true,
+         doIterate = false,
+         canIterate = false,
          doDebug = false;
 };  // Class QEasyDownloader END
 #endif // QEASY_DOWNLOADER_HPP_INCLUDED

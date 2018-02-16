@@ -7,7 +7,7 @@ int main(int argc, char **argv)
     QInstallerBridge Bridge("https://raw.githubusercontent.com/antony-jr/exercism-installer/master/exercism-installers/linux/repo",
                             "components.xml",
                             "./",
-                            false);
+                            true);
     QObject::connect(&Bridge, &QInstallerBridge::updatesList, [&](QVector<QInstallerBridge::PackageUpdate> list) {
         if(list.isEmpty()) {
             qDebug() << "No Updates Available!";

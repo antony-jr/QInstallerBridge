@@ -35,7 +35,7 @@
  *  @description	: A small header writen in C++ using Qt5 to communicate
  *  			  with the Qt Installer Framework. This header helps you
  *  			  to check the remote repo and also update to the latest.
- *
+ *  @tag		: v0.0.3
  * -----------------------------------------------------------------------------
 */
 #if !defined(QINSTALLER_BRIDGE_HPP_INCLUDED)
@@ -47,6 +47,8 @@
 #include <QDomElement>
 #include "QArchive/QArchive.hpp"
 #include "QEasyDownloader/QEasyDownloader.hpp"
+
+#define NONEED(x) (void)x
 
 /*
  * Class QInstallerBridge  <- Inherits QObject
@@ -81,14 +83,14 @@
  *	bool  isDebug(void)			  - Returns True or False from (3) Debug.
  *
  * Private Slots:
- * 	void RepoSync(const QUrl& , const QString&)         - This slot is connected to the signal of
+ * 	void RepoSync(const QString&)                       - This slot is connected to the signal of
  * 						       	      QEasyDownloader::DownloadFinished
  * 						              Downloads Updates.xml from the remote
  * 						              repo and checks for new update.
  * 						              If found updatesList(const QStringList&) is
  * 						              emitted.
  *
- * 	void VerifyAndMergeRepo(const QUrl&,const QString&) - This slot is connect to the signal of
+ * 	void VerifyAndMergeRepo(const QString&)            - This slot is connect to the signal of
  * 							      QEasyDownloader::DownloadFinished
  * 							      Downloads {Version}meta.7z from the
  * 							      remote repo and checks the SHA1 sum of
@@ -271,6 +273,128 @@ public:
     }
 
 private slots:
+    void FinishedDownloadingUpdates()
+    {
+        disconnect(&DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::FinishArchiveDownload);
+        disconnect(&DownloadManager, &QEasyDownloader::Finished, this, &QInstallerBridge::FinishedDownloadingUpdates);
+        emit(updatesDownloaded());
+        return;
+    }
+
+    void ProxyDownloadProgress(qint64 bytesReceived,
+                               qint64 bytesTotal,
+                               int percent,
+                               double speed,
+                               const QString &unit,
+                               const QUrl &url,
+                               const QString &fileName)
+    {
+        emit updatesDownloadProgress(bytesReceived, bytesTotal, percent, speed, unit, url,fileName);
+        return;
+    }
+
+    void VerifyArchiveChecksums(const QString &RepoArchiveChecksum)
+    {
+
+        QFile LocalArchive(CurrentCheckFile);
+        if(LocalArchive.open(QIODevice::ReadOnly)) {
+            QString LocalArchiveChecksum = QCryptographicHash::hash(LocalArchive.readAll(), QCryptographicHash::Sha1).toHex();
+
+            if(LocalArchiveChecksum != RepoArchiveChecksum) {
+                /*
+                 * Failed to prove integrity!
+                 * emit error and die.
+                */
+                emit error(SHA1_KEY_MISMATCH, CurrentCheckFile);
+                return;
+            }
+
+            // Integrity Proved. So lets download the next package.
+            if(debug) {
+                qDebug() << "QInstallerBridge::Integrity Proved : " << CurrentCheckFile;
+            }
+
+            DownloadManager.Next(); // Next Iteration.
+
+        } else {
+            emit error(TEMP_FILE_OPEN_ERROR, CurrentCheckFile);
+        }
+        return;
+
+        return;
+    }
+
+    void FinishArchiveDownload(const QUrl &url, const QString &file)
+    {
+        QUrl ChecksumURL = QUrl(QString(url.toEncoded().data()) + ".sha1");
+        CurrentCheckFile = file;
+        DownloadManager.Get(ChecksumURL);
+        emit updateDownloaded(url, file);
+        return;
+    }
+
+    void FinishedPackageVerifications()
+    {
+        FreeTemporaryFiles();
+
+        disconnect(&DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::VerifyPackageChecksums);
+        disconnect(&DownloadManager, &QEasyDownloader::Finished, this, &QInstallerBridge::FinishedPackageVerifications);
+        connect(&DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::FinishArchiveDownload);
+        connect(&DownloadManager, &QEasyDownloader::Finished, this, &QInstallerBridge::FinishedDownloadingUpdates);
+
+        for(int item = 0; item < Updates.size() ; ++item) {
+            QStringList PackagesData = Updates
+                                       .at(item)
+                                       .DownloadableArchives
+                                       .split(",");
+
+            for(int dataItem = 0; dataItem < PackagesData.size() ; ++dataItem) {
+                QString ArchiveURL = repoLink
+                                     + "/"
+                                     + Updates.at(item).PackageName
+                                     + "/"
+                                     + Updates.at(item).Version
+                                     + PackagesData.at(dataItem);
+                auto TFile = new QTemporaryFile;
+                TFile->open();
+                CachedPackagesData << TFile->fileName();
+                DownloadManager.Download(ArchiveURL, TFile->fileName());
+                CachedTemporaryFiles.push_back(TFile);
+            }
+        }
+
+    }
+
+    void VerifyPackageChecksums(const QUrl &url, const QString &file)
+    {
+        NONEED(url);
+        QFile LocalMeta(file);
+        if(LocalMeta.open(QIODevice::ReadOnly)) {
+            QString LocalMetaChecksum = QCryptographicHash::hash(LocalMeta.readAll(), QCryptographicHash::Sha1).toHex();
+
+            if(LocalMetaChecksum != Updates.at(buff).SHA1) {
+                /*
+                 * Failed to prove integrity!
+                 * emit error and die.
+                */
+                emit error(SHA1_KEY_MISMATCH, CurrentCheckFile);
+                return;
+            }
+
+            // Integrity Proved. So lets download the next package.
+            if(debug) {
+                qDebug() << "QInstallerBridge::Integrity Proved : " << file;
+            }
+
+            buff += 1;
+            DownloadManager.Next(); // Next Iteration.
+
+        } else {
+            emit error(TEMP_FILE_OPEN_ERROR, file);
+        }
+        return;
+    }
+
     void RepoSync(const QString& resp)
     {
         QXmlStreamReader XMLReader(resp);
@@ -493,58 +617,40 @@ public slots:
         }
 
         CachedPackagesData.clear(); // clean previous data
+        CurrentCheckFile.clear();
+        buff = 0; // Random integer buffer , Can be used for any type of counting.
 
-        connect(&DownloadManager, &QEasyDownloader::DownloadFinished,
-        [&](const QUrl &url, const QString &file) {
-            emit updateDownloaded(url, file);
-        });
+        connect(&DownloadManager, &QEasyDownloader::GetResponse, this, &QInstallerBridge::VerifyArchiveChecksums);
+        connect(&DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::VerifyPackageChecksums);
 
         connect(&DownloadManager, &QEasyDownloader::Error,
         [&](QNetworkReply::NetworkError errorCode, const QUrl &url, const QString &fileName) {
             if(errorCode == QNetworkReply::HostNotFoundError) {
                 emit error(NETWORK_ERROR,url.toString() + " :: " + fileName);
             } else {
-                emit error(NETWORK_ERROR, "In Retriving " + url.toString());
+                emit error(NETWORK_ERROR, QString(url.toEncoded().data()));
             }
             return;
         });
 
-        connect(&DownloadManager, &QEasyDownloader::DownloadProgress,
-                [&](qint64 bytesReceived,
-                    qint64 bytesTotal,
-                    int percent,
-                    double speed,
-                    const QString &unit,
-                    const QUrl &url,
-        const QString &fileName) {
-            emit updatesDownloadProgress(bytesReceived, bytesTotal, percent, speed, unit, url,fileName);
-            return;
-        });
+        connect(&DownloadManager, &QEasyDownloader::DownloadProgress, this, &QInstallerBridge::ProxyDownloadProgress);
+        connect(&DownloadManager, &QEasyDownloader::Finished, this, &QInstallerBridge::FinishedPackageVerifications);
 
-        connect(&DownloadManager, &QEasyDownloader::Finished,
-        [&]() {
-            emit updatesDownloaded();
-        });
+        // Lets enable iteration in our faithfull downloader.
+        DownloadManager.Iterated(true);
 
         for(int item = 0; item < Updates.size() ; ++item) {
-            QStringList PackagesData = Updates
-                                       .at(item)
-                                       .DownloadableArchives
-                                       .split(",");
+            QString MetaURL = repoLink
+                              + "/"
+                              + Updates.at(item).PackageName
+                              + "/"
+                              + Updates.at(item).Version
+                              + "meta.7z";
 
-            for(int dataItem = 0; dataItem < PackagesData.size() ; ++dataItem) {
-                QString ArchiveURL = repoLink
-                                     + "/"
-                                     + Updates.at(item).PackageName
-                                     + "/"
-                                     + Updates.at(item).Version
-                                     + PackagesData.at(dataItem);
-                auto TFile = new QTemporaryFile;
-                TFile->open();
-                CachedPackagesData << TFile->fileName();
-                DownloadManager.Download(ArchiveURL, TFile->fileName());
-                CachedTemporaryFiles.push_back(TFile);
-            }
+            auto TFile = new QTemporaryFile;
+            TFile->open();
+            DownloadManager.Download(MetaURL, TFile->fileName());
+            CachedTemporaryFiles.push_back(TFile);
         }
         return;
     }
@@ -636,11 +742,13 @@ signals:
     void InstallationAborted();
 
 private:
+    int buff = 0;
     bool debug = false,
          doUpdate = false;
     QString repoLink,
             componentsXML,
-            installationPath;
+            installationPath,
+            CurrentCheckFile;
     QStringList CachedPackagesData;
     QVector<QTemporaryFile*> CachedTemporaryFiles;
     QVector<PackageUpdate> Updates;
