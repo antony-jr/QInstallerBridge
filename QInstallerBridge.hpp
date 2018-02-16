@@ -150,6 +150,7 @@ public:
     typedef struct {
         QString PackageName;
         QString Description;
+        QString Changelog;
         QString Version;
         QString DownloadableArchives;
         QString SHA1;
@@ -410,6 +411,8 @@ private slots:
                     Package.PackageName = QString(XMLReader.readElementText());
                 } else if(Key == "Description") {
                     Package.Description = QString(XMLReader.readElementText());
+                } else if(Key == "Changelog") {
+                    Package.Changelog = QString(XMLReader.readElementText());
                 } else if(Key == "Version") {
                     Package.Version = QString(XMLReader.readElementText());
                 } else if(Key == "DownloadableArchives") {

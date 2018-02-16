@@ -18,7 +18,10 @@ int main(int argc, char **argv)
         for(int it = 0; it < list.size() ; ++it) {
             qDebug() << "Package Name ->" << list.at(it).PackageName;
             qDebug() << "Version ->" << list.at(it).Version;
-        }
+            if(!list.at(it).Changelog.isEmpty()){
+	     qDebug() << "Changelog ->" << list.at(it).Changelog;
+	    }
+	}
         Bridge.DownloadUpdates();
     });
 
