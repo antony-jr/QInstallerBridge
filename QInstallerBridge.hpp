@@ -35,7 +35,7 @@
  *  @description	: A small header writen in C++ using Qt5 to communicate
  *  			  with the Qt Installer Framework. This header helps you
  *  			  to check the remote repo and also update to the latest.
- *  @tag		: v0.0.3
+ *  @tag		: v0.0.4
  * -----------------------------------------------------------------------------
 */
 #if !defined(QINSTALLER_BRIDGE_HPP_INCLUDED)
