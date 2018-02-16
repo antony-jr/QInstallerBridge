@@ -51,18 +51,6 @@ Please refer the **documentation** for more information. ( Will soon be availabl
 
 * [AutoUpdater-Qt by speedovation](https://github.com/speedovation/AutoUpdater-Qt)   
        
-    The disadvantage in this project is that , it does not communicate with the Qt Maintanance Tool and thus the user is forced   
-    to use Qt Installer Framework only or the authors AutoUpdater Only. And you cannot update the updater itself!
-    
-    **AutoUpdater-Qt** does not provide a async structure too and thus it is impossible to make your own AutoUpdate Windows!
-    But I recommend this if you want a very quick fix for non-production ready apps!
-    
-    **Disclaimer** : No offence but , This tool only handles with zip files and there is no documentation.   
-                     I don't know anything specific about this project!
-
-           
-           
-<!-- $ curl -L "https://git.io/vbdkW" | bash-->
 
 # Getting Started
 
