@@ -36,7 +36,7 @@ Cool , Right ?...
               That is common sense , right ?...
               
 
-Please refer the **documentation** for more information. ( Will soon be available! )   
+Please refer the **[documentation](https://antony-jr.github.io/QInstallerBridge)** for more information.
 **Open issues** if you have any doubts , I will gladly answer you :heart: !
 
 
