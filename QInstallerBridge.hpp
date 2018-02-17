@@ -179,20 +179,23 @@ public:
         UNKNOWN_ERROR = -8
     };
 
-    explicit QInstallerBridge(QObject *p = 0)
+    explicit QInstallerBridge(QObject *p = NULL , QNetworkAccessManager *toUse = NULL)
         : QObject(p)
     {
+	DownloadManager = new QEasyDownloader(p , toUse);
         return;
     }
     explicit QInstallerBridge(const QString& repoLink,
                               const QString& componentsXML,
                               const QString& installPath,
                               bool debug)
-        : debug(debug),
+        : QObject(NULL),
+	  debug(debug),
           repoLink(repoLink),
           componentsXML(componentsXML),
           installationPath(installPath)
     {
+	DownloadManager = new QEasyDownloader;
         showConfiguration();
         return;
     }
@@ -271,13 +274,14 @@ public:
     ~QInstallerBridge()
     {
         FreeTemporaryFiles();
+        DownloadManager->deleteLater();
     }
 
 private slots:
     void FinishedDownloadingUpdates()
     {
-        disconnect(&DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::FinishArchiveDownload);
-        disconnect(&DownloadManager, &QEasyDownloader::Finished, this, &QInstallerBridge::FinishedDownloadingUpdates);
+        disconnect(DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::FinishArchiveDownload);
+        disconnect(DownloadManager, &QEasyDownloader::Finished, this, &QInstallerBridge::FinishedDownloadingUpdates);
         emit(updatesDownloaded());
         return;
     }
@@ -315,7 +319,7 @@ private slots:
                 qDebug() << "QInstallerBridge::Integrity Proved : " << CurrentCheckFile;
             }
 
-            DownloadManager.Next(); // Next Iteration.
+            DownloadManager->Next(); // Next Iteration.
 
         } else {
             emit error(TEMP_FILE_OPEN_ERROR, CurrentCheckFile);
@@ -329,7 +333,7 @@ private slots:
     {
         QUrl ChecksumURL = QUrl(QString(url.toEncoded().data()) + ".sha1");
         CurrentCheckFile = file;
-        DownloadManager.Get(ChecksumURL);
+        DownloadManager->Get(ChecksumURL);
         emit updateDownloaded(url, file);
         return;
     }
@@ -338,10 +342,10 @@ private slots:
     {
         FreeTemporaryFiles();
 
-        disconnect(&DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::VerifyPackageChecksums);
-        disconnect(&DownloadManager, &QEasyDownloader::Finished, this, &QInstallerBridge::FinishedPackageVerifications);
-        connect(&DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::FinishArchiveDownload);
-        connect(&DownloadManager, &QEasyDownloader::Finished, this, &QInstallerBridge::FinishedDownloadingUpdates);
+        disconnect(DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::VerifyPackageChecksums);
+        disconnect(DownloadManager, &QEasyDownloader::Finished, this, &QInstallerBridge::FinishedPackageVerifications);
+        connect(DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::FinishArchiveDownload);
+        connect(DownloadManager, &QEasyDownloader::Finished, this, &QInstallerBridge::FinishedDownloadingUpdates);
 
         for(int item = 0; item < Updates.size() ; ++item) {
             QStringList PackagesData = Updates
@@ -359,7 +363,7 @@ private slots:
                 auto TFile = new QTemporaryFile;
                 TFile->open();
                 CachedPackagesData << TFile->fileName();
-                DownloadManager.Download(ArchiveURL, TFile->fileName());
+                DownloadManager->Download(ArchiveURL, TFile->fileName());
                 CachedTemporaryFiles.push_back(TFile);
             }
         }
@@ -388,7 +392,7 @@ private slots:
             }
 
             buff += 1;
-            DownloadManager.Next(); // Next Iteration.
+            DownloadManager->Next(); // Next Iteration.
 
         } else {
             emit error(TEMP_FILE_OPEN_ERROR, file);
@@ -494,7 +498,7 @@ private slots:
          * Disconnect Previous Connections
          * just in case!
         */
-        disconnect(&DownloadManager,
+        disconnect(DownloadManager,
                    SIGNAL(GetResponse(const QString& )),
                    this,
                    SLOT(RepoSync(const QString&)));
@@ -592,19 +596,19 @@ public slots:
         /*
          * Connect Callbacks!
         */
-        connect(&DownloadManager,
+        connect(DownloadManager,
                 SIGNAL(GetResponse(const QString& )),
                 this,
                 SLOT(RepoSync(const QString&)));
-        connect(&DownloadManager, &QEasyDownloader::Error,
+        connect(DownloadManager, &QEasyDownloader::Error,
         [&](QNetworkReply::NetworkError errorCode, const QUrl &url, const QString &fileName) {
             (void)errorCode;
             emit error(NETWORK_ERROR,url.toString() + " :: " + fileName);
             return;
         });
 
-        DownloadManager.Debug(debug);
-        DownloadManager.Get(QUrl(repoLink + "/Updates.xml"));
+        DownloadManager->Debug(debug);
+        DownloadManager->Get(QUrl(repoLink + "/Updates.xml"));
 
         if(debug) {
             qDebug() << "QInstallerBridge::AwaitFor::RepoSync";
@@ -623,10 +627,10 @@ public slots:
         CurrentCheckFile.clear();
         buff = 0; // Random integer buffer , Can be used for any type of counting.
 
-        connect(&DownloadManager, &QEasyDownloader::GetResponse, this, &QInstallerBridge::VerifyArchiveChecksums);
-        connect(&DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::VerifyPackageChecksums);
+        connect(DownloadManager, &QEasyDownloader::GetResponse, this, &QInstallerBridge::VerifyArchiveChecksums);
+        connect(DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::VerifyPackageChecksums);
 
-        connect(&DownloadManager, &QEasyDownloader::Error,
+        connect(DownloadManager, &QEasyDownloader::Error,
         [&](QNetworkReply::NetworkError errorCode, const QUrl &url, const QString &fileName) {
             if(errorCode == QNetworkReply::HostNotFoundError) {
                 emit error(NETWORK_ERROR,url.toString() + " :: " + fileName);
@@ -636,11 +640,11 @@ public slots:
             return;
         });
 
-        connect(&DownloadManager, &QEasyDownloader::DownloadProgress, this, &QInstallerBridge::ProxyDownloadProgress);
-        connect(&DownloadManager, &QEasyDownloader::Finished, this, &QInstallerBridge::FinishedPackageVerifications);
+        connect(DownloadManager, &QEasyDownloader::DownloadProgress, this, &QInstallerBridge::ProxyDownloadProgress);
+        connect(DownloadManager, &QEasyDownloader::Finished, this, &QInstallerBridge::FinishedPackageVerifications);
 
         // Lets enable iteration in our faithfull downloader.
-        DownloadManager.Iterated(true);
+        DownloadManager->Iterated(true);
 
         for(int item = 0; item < Updates.size() ; ++item) {
             QString MetaURL = repoLink
@@ -652,7 +656,7 @@ public slots:
 
             auto TFile = new QTemporaryFile;
             TFile->open();
-            DownloadManager.Download(MetaURL, TFile->fileName());
+            DownloadManager->Download(MetaURL, TFile->fileName());
             CachedTemporaryFiles.push_back(TFile);
         }
         return;
@@ -702,7 +706,7 @@ public slots:
 
     void AbortDownload()
     {
-        DownloadManager.Pause();
+        DownloadManager->Pause();
         FreeTemporaryFiles();
         emit DownloadAborted();
         return;
@@ -755,7 +759,7 @@ private:
     QStringList CachedPackagesData;
     QVector<QTemporaryFile*> CachedTemporaryFiles;
     QVector<PackageUpdate> Updates;
-    QEasyDownloader DownloadManager;
+    QEasyDownloader *DownloadManager;
     QArchive::Extractor Archiver;
 }; // Class QInstallerBridge Ends
 #endif // QINSTALLER_BRIDGE_HPP_INCLUDED
