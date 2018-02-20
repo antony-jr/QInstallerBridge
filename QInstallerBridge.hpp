@@ -460,20 +460,24 @@ private slots:
                             QStringList RepoSemVer = RepoPackages.at(item).Version.split('.');
                             if(RepoSemVer.at(0).toInt() > LocalSemVer.at(0).toInt()) {
                                 Updates.push_back(RepoPackages.at(item));
-                            } else {
+                            } else if(RepoSemVer.at(0).toInt() == LocalSemVer.at(0).toInt()) {
                                 if(RepoSemVer.at(1).toInt() > LocalSemVer.at(1).toInt()) {
                                     Updates.push_back(RepoPackages.at(item));
-                                } else {
+                                } else if(RepoSemVer.at(1).toInt() == LocalSemVer.at(1).toInt()) {
                                     if(RepoSemVer.at(2).toInt() > LocalSemVer.at(2).toInt()) {
                                         Updates.push_back(RepoPackages.at(item));
                                     }
+                                } else {
+                                    break;
                                 }
+
+                            } else {
+                                break;
                             }
+                            break;
                         }
-                        break;
                     }
                 }
-                break;
             }
         }
         if(XMLReaderLocal.hasError()) {
