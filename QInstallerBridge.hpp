@@ -157,15 +157,6 @@ public:
     } PackageUpdate;
 
     /*
-     * SemVer!
-    */
-    enum {
-        MAJOR,
-        MINOR,
-        PATCH
-    };
-
-    /*
      * Error codes!
     */
     enum {
@@ -179,10 +170,10 @@ public:
         UNKNOWN_ERROR = -8
     };
 
-    explicit QInstallerBridge(QObject *p = NULL , QNetworkAccessManager *toUse = NULL)
+    explicit QInstallerBridge(QObject *p = NULL, QNetworkAccessManager *toUse = NULL)
         : QObject(p)
     {
-	DownloadManager = new QEasyDownloader(p , toUse);
+        DownloadManager = new QEasyDownloader(p, toUse);
         return;
     }
     explicit QInstallerBridge(const QString& repoLink,
@@ -190,12 +181,12 @@ public:
                               const QString& installPath,
                               bool debug)
         : QObject(NULL),
-	  debug(debug),
+          debug(debug),
           repoLink(repoLink),
           componentsXML(componentsXML),
           installationPath(installPath)
     {
-	DownloadManager = new QEasyDownloader;
+        DownloadManager = new QEasyDownloader;
         showConfiguration();
         return;
     }
@@ -278,6 +269,7 @@ public:
     }
 
 private slots:
+
     void FinishedDownloadingUpdates()
     {
         disconnect(DownloadManager, &QEasyDownloader::DownloadFinished, this, &QInstallerBridge::FinishArchiveDownload);
@@ -464,27 +456,26 @@ private slots:
                     QString Version(XMLReaderLocal.readElementText());
                     for(int item = 0; item < RepoPackages.size() ; ++item) {
                         if(PackageNameLocal == RepoPackages.at(item).PackageName) {
-                            QStringList SemVerLocal = Version.split(".");
-                            QStringList SemVerRepos = RepoPackages.at(item).Version.split(".");
-
-                            if(SemVerRepos.at(MAJOR).toInt() >= SemVerLocal.at(MAJOR).toInt()) {
-                                if(SemVerRepos.at(MINOR).toInt() >= SemVerLocal.at(MINOR).toInt()) {
-                                    if(SemVerRepos.at(PATCH).toInt() > SemVerLocal.at(PATCH).toInt()) {
-                                        if(debug) {
-                                            qDebug() << "QInstallerBridge::New Update Available!";
-                                        }
+                            QStringList LocalSemVer = Version.split('.');
+                            QStringList RepoSemVer = RepoPackages.at(item).Version.split('.');
+                            if(RepoSemVer.at(0) > LocalSemVer.at(0)) {
+                                Updates.push_back(RepoPackages.at(item));
+                            } else {
+                                if(RepoSemVer.at(1) > LocalSemVer.at(1)) {
+                                    Updates.push_back(RepoPackages.at(item));
+                                } else {
+                                    if(RepoSemVer.at(2) > LocalSemVer.at(2)) {
                                         Updates.push_back(RepoPackages.at(item));
                                     }
                                 }
                             }
-                            break;
                         }
+                        break;
                     }
-                    break;
                 }
+                break;
             }
         }
-
         if(XMLReaderLocal.hasError()) {
             if(debug) {
                 qDebug() << "QInstallerBridge::ComponentsXML::Error::" << XMLReader.errorString();
