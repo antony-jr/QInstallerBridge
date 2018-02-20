@@ -458,13 +458,13 @@ private slots:
                         if(PackageNameLocal == RepoPackages.at(item).PackageName) {
                             QStringList LocalSemVer = Version.split('.');
                             QStringList RepoSemVer = RepoPackages.at(item).Version.split('.');
-                            if(RepoSemVer.at(0) > LocalSemVer.at(0)) {
+                            if(RepoSemVer.at(0).toInt() > LocalSemVer.at(0).toInt()) {
                                 Updates.push_back(RepoPackages.at(item));
                             } else {
-                                if(RepoSemVer.at(1) > LocalSemVer.at(1)) {
+                                if(RepoSemVer.at(1).toInt() > LocalSemVer.at(1).toInt()) {
                                     Updates.push_back(RepoPackages.at(item));
                                 } else {
-                                    if(RepoSemVer.at(2) > LocalSemVer.at(2)) {
+                                    if(RepoSemVer.at(2).toInt() > LocalSemVer.at(2).toInt()) {
                                         Updates.push_back(RepoPackages.at(item));
                                     }
                                 }
